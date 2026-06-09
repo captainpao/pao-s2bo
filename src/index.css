@@ -1,3 +1,85 @@
+/* SC Prosper Sans — embedded from src/assets (weights verified against sc.com) */
+@font-face {
+  font-family: 'SC Prosper Sans';
+  src: url('./assets/cbca069898c7e766a3481be0b5f2bf34.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SC Prosper Sans';
+  src: url('./assets/c4493736885007d8bc798eac2adb3cc3.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SC Prosper Sans';
+  src: url('./assets/5e9a2e9559a6723d7595be2b0729e3d6.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SC Prosper Sans';
+  src: url('./assets/0712556f63ef012590f5e25151a2b0cb.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── SC Design Tokens ── */
+:root {
+  --sc-blue:           #0473EA;
+  --sc-blue-dark:      #0061C7;
+  --sc-blue-deep:      #2C3A87;
+  --sc-blue-70:        #4F9DF0;
+  --sc-blue-50:        #7BB6F5;
+  --sc-blue-20:        #C3DEFA;
+  --sc-blue-xlight:    #EBF5FF;
+  --sc-green:          #38D200;
+  --sc-green-dark:     #2aA000;
+  --sc-green-20:       #CDF4BF;
+  --sc-navy:           #2C3A87;
+  --sc-grey-brand:     #525355;
+  --sc-gold:           #C9A84C;
+  --sc-white:          #FFFFFF;
+  --sc-off-white:      #F5F5F5;
+  --sc-gray-100:       #E5E5E5;
+  --sc-gray-200:       #D4D4D4;
+  --sc-gray-300:       #A8A9AA;
+  --sc-gray-400:       #868788;
+  --sc-gray-600:       #525355;
+  --sc-gray-800:       #333333;
+  --sc-gray-900:       #1A1A1A;
+  --sc-font-primary:   'SC Prosper Sans', Helvetica, Arial, 'Lucida Grande', sans-serif;
+  --sc-weight-btn:     400;
+  --sc-radius-btn:     9999px;
+  --sc-radius-input:   4px;
+  --sc-radius-md:      8px;
+  --sc-shadow-sm:      0 2px 8px rgba(0,0,0,0.08);
+  --sc-shadow-md:      0 4px 16px rgba(0,0,0,0.10);
+  --sc-transition-base: 200ms ease-out;
+}
+
+/* SC logo sizing and fill */
+.sc-logo-dark svg,
+.sc-logo-light svg { height: 100%; width: auto; }
+.logo-lettering { fill: #525355; }
+.sc-logo-dark .logo-lettering { fill: #ffffff; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'SC Prosper Sans', Helvetica, Arial, 'Lucida Grande', sans-serif;
+  font-weight: 400;
+  color: var(--sc-gray-900);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

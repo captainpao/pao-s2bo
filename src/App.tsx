@@ -1,35 +1,108 @@
-import React, { useState } from 'react';
-import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, DollarSign, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck } from 'lucide-react';
+import { useState } from 'react';
+import scLogoRaw from './assets/logo.svg?raw';
+import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck } from 'lucide-react';
+
+/* ─── Domain types ─── */
+type EntityId = 'meridian' | 'aurelius';
+type SectionId = 'start' | 'company' | 'compliance' | 'accounts' | 'mandate' | 's2b' | 'documents' | 'review';
+type AppStatus = 'client-draft' | 'bank-review' | 'awaiting-signatures' | 'activated';
+type SpecMode = 'a' | 'b';
+type ComplianceSubId = 'country' | 'kyc-narrative' | 'kyc-questions' | 'declarations';
+type SigningRule = 'any-one' | 'any-two' | 'categories' | 'custom' | null;
+type SpecType = 'spec-a' | 'spec-b' | 'enhanced';
+
+interface ModalConfig {
+  title: string;
+  body: React.ReactNode;
+  footer: React.ReactNode | null;
+}
+
+interface Account {
+  id: number;
+  currency: string;
+  purpose: string;
+  services: string[];
+}
+
+interface Signatory {
+  id: number;
+  name: string;
+  role: string;
+  category: string;
+  limit: number;
+  source?: string;
+  acraDirector?: boolean;
+}
+
+interface CompanyFields {
+  legalName: string;
+  uen: string;
+  entityType: string;
+  incorporated: string;
+  address: string;
+  industry: string;
+  contactName: string;
+  contactTitle: string;
+  contactEmail: string;
+  contactPhone: string;
+  primaryMarkets: string;
+}
+
+interface NarrativeStep {
+  classify: string;
+  extract: string;
+  reconcile: string;
+  validate: string;
+  apply: string;
+  extractedFields?: Partial<CompanyFields>;
+}
+
+interface DocIntelState {
+  uploadedDocs: string[];
+  isProcessing: boolean;
+  processingStep: number;
+  extractedFields: Partial<CompanyFields>;
+  showSidePanel: boolean;
+  currentDocId?: string;
+  currentNarrative?: NarrativeStep;
+}
+
+interface IdUpload {
+  idType: string;
+  name: string;
+  matched: boolean;
+  uploaded: boolean;
+}
 
 export default function S2BOModule1V2() {
-  const [entity, setEntity] = useState('meridian');
-  const [section, setSection] = useState('company');
-  const [toast, setToast] = useState(null);
-  const [modal, setModal] = useState(null);
-  const [delegationChoice, setDelegationChoice] = useState(null);
+  const [entity, setEntity] = useState<EntityId>('meridian');
+  const [section, setSection] = useState<SectionId>('company');
+  const [toast, setToast] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalConfig | null>(null);
+  const [delegationChoice, setDelegationChoice] = useState<string | null>(null);
   const [showWhatChanged, setShowWhatChanged] = useState(false);
-  const [docIntelState, setDocIntelState] = useState({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
-  const [idUploads, setIdUploads] = useState({});
-  const [appStatus, setAppStatus] = useState('client-draft');
-  const [signingState, setSigningState] = useState({});
-  const [complianceSubsection, setComplianceSubsection] = useState('country');
-  const [complianceSubProgress, setComplianceSubProgress] = useState({ country: 0, 'kyc-narrative': 0, 'kyc-questions': 0, declarations: 0 });
+  const [docIntelState, setDocIntelState] = useState<DocIntelState>({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
+  const [idUploads, setIdUploads] = useState<Record<string, IdUpload>>({});
+  const [appStatus, setAppStatus] = useState<AppStatus>('client-draft');
+  const [signingState, setSigningState] = useState<Record<string, string>>({});
+  const [complianceSubsection, setComplianceSubsection] = useState<ComplianceSubId>('country');
+  const [complianceSubProgress, setComplianceSubProgress] = useState<Record<ComplianceSubId, number>>({ country: 0, 'kyc-narrative': 0, 'kyc-questions': 0, declarations: 0 });
   const [kycNarrative, setKycNarrative] = useState({ businessDescription: '', countriesTraded: '', productsServices: '', turnover: '', duration: '', majorClients: '', majorSuppliers: '', mainCompetitors: '', sourceOfFunds: '' });
-  const [kycQuestionsState, setKycQuestionsState] = useState({ currentIdx: 0, answers: {}, followups: {} });
+  const [kycQuestionsState, setKycQuestionsState] = useState<{ currentIdx: number; answers: Record<string, string>; followups: Record<string, string> }>({ currentIdx: 0, answers: {}, followups: {} });
 
   const [mandateStep, setMandateStep] = useState(1);
-  const [signingRule, setSigningRule] = useState(null);
-  const [signatories, setSignatories] = useState([
+  const [signingRule, setSigningRule] = useState<SigningRule>(null);
+  const [signatories, setSignatories] = useState<Signatory[]>([
     { id: 1, name: 'Alice Smith', role: 'Head of Finance', category: 'A', limit: 50000 },
     { id: 2, name: 'David Tan', role: 'CFO', category: 'A', limit: 250000 },
     { id: 3, name: 'Priya Krishnan', role: 'Treasury Manager', category: 'B', limit: 25000 }
   ]);
 
-  const [mandateMode, setMandateMode] = useState('chooser');
+  const [mandateMode, setMandateMode] = useState<string>('chooser');
   const [mandateAiStage, setMandateAiStage] = useState(0);
 
   // Spec mode master toggle. 'a' = foundation (AI hidden), 'b' = AI-embedded
-  const [specMode, setSpecMode] = useState('b');
+  const [specMode, setSpecMode] = useState<SpecMode>('b');
 
   const MANDATE_AI = {
     documentName: 'Board Mandate - 15 March 2026.pdf',
@@ -48,7 +121,7 @@ export default function S2BOModule1V2() {
     ]
   };
 
-  const [accountsList, setAccountsList] = useState({
+  const [accountsList, setAccountsList] = useState<Record<EntityId, Account[]>>({
     meridian: [
       { id: 1, currency: 'SGD', purpose: 'Operating account', services: ['online', 'cards'] },
       { id: 2, currency: 'USD', purpose: 'Trade settlement', services: ['online'] }
@@ -56,22 +129,22 @@ export default function S2BOModule1V2() {
     aurelius: []
   });
   const accounts = accountsList[entity];
-  const setAccounts = (newAccounts) => setAccountsList(prev => ({ ...prev, [entity]: newAccounts }));
+  const setAccounts = (newAccounts: Account[]) => setAccountsList(prev => ({ ...prev, [entity]: newAccounts }));
 
   const [s2bUsers, setS2bUsers] = useState([{ id: 1, name: 'Alice Smith', email: 'alice.smith@meridian.com', role: 'Admin', dailyLimit: 1000000 }]);
 
-  const [completion, setCompletion] = useState({
+  const [completion, setCompletion] = useState<Record<EntityId, Record<SectionId, number>>>({
     meridian: { start: 100, company: 85, compliance: 0, accounts: 60, mandate: 0, s2b: 30, documents: 40, review: 0 },
     aurelius: { start: 100, company: 5, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 10, review: 0 }
   });
 
-  const [companyFields, setCompanyFields] = useState({
+  const [companyFields, setCompanyFields] = useState<Record<EntityId, CompanyFields>>({
     meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: 'Alice Smith', contactTitle: 'Head of Finance', contactEmail: 'alice.smith@meridian.com', contactPhone: '+65 9123 4567', primaryMarkets: '' },
     aurelius: { legalName: '', uen: '202698765A', entityType: '', incorporated: '3 Apr 2026', address: '', industry: '', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' }
   });
 
   const fields = companyFields[entity];
-  const setField = (key, value) => setCompanyFields(prev => ({ ...prev, [entity]: { ...prev[entity], [key]: value } }));
+  const setField = (key: keyof CompanyFields, value: string) => setCompanyFields(prev => ({ ...prev, [entity]: { ...prev[entity], [key]: value } }));
 
   const entityData = {
     meridian: { name: 'Meridian Trade Solutions Pte. Ltd.', shortName: 'Meridian Trade Solutions', meta: 'UEN 202512345X · Private Limited · Singapore', products: 'Cash account + S2B online', locations: 'Singapore (primary), UAE', assignedTo: 'Alice Smith (you)', mode: 'Registry-assisted', modeNote: 'ACRA pre-fill available' },
@@ -81,7 +154,7 @@ export default function S2BOModule1V2() {
   const ent = entityData[entity];
   const sectionCompletion = completion[entity];
 
-  const sections = [
+  const sections: { id: SectionId; label: string }[] = [
     { id: 'start', label: 'Get started' },
     { id: 'company', label: 'Company details' },
     { id: 'compliance', label: 'Compliance' },
@@ -93,11 +166,11 @@ export default function S2BOModule1V2() {
   ];
 
   const currentSectionIndex = sections.findIndex(s => s.id === section);
-  const overallProgress = Math.round(Object.values(sectionCompletion).reduce((a, b) => a + b, 0) / sections.length);
+  const overallProgress = Math.round(Object.values(sectionCompletion).reduce((a: number, b: number) => a + b, 0) / sections.length);
 
-  const showToast = (message) => { setToast(message); setTimeout(() => setToast(null), 3000); };
-  const advanceCompletion = (sectionId, value) => setCompletion(prev => ({ ...prev, [entity]: { ...prev[entity], [sectionId]: value } }));
-  const journeyStepState = (sectionId, idx) => {
+  const showToast = (message: string) => { setToast(message); setTimeout(() => setToast(null), 3000); };
+  const advanceCompletion = (sectionId: SectionId, value: number) => setCompletion(prev => ({ ...prev, [entity]: { ...prev[entity], [sectionId]: value } }));
+  const journeyStepState = (sectionId: SectionId, idx: number) => {
     const c = sectionCompletion[sectionId];
     if (sectionId === section) return 'current';
     if (c >= 100) return 'done';
@@ -105,7 +178,7 @@ export default function S2BOModule1V2() {
     if (idx <= currentSectionIndex + 1) return 'available';
     return 'locked';
   };
-  const formatMoney = (n) => 'S$' + n.toLocaleString();
+  const formatMoney = (n: number) => 'S$' + n.toLocaleString();
 
   const runAureliusPack = () => {
     const narrative = {
@@ -249,7 +322,7 @@ export default function S2BOModule1V2() {
                 </div>
               </div>
             </div>,
-            footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">Close</button>
+            footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-full hover:bg-blue-700">Close</button>
           })} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Eye size={12} />Preview draft</button>
           <button onClick={() => showToast('Application saved.')} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Save size={12} />Save & exit</button>
         </div>
@@ -289,15 +362,23 @@ export default function S2BOModule1V2() {
   );
 
   const Banner = () => (
-    <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a3456 0%, #0c2340 100%)' }}>
+    <div className="relative overflow-hidden" style={{ background: '#2C3A87' }}>
       <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)' }}></div>
       <div className="px-6 py-3.5 flex items-center justify-between gap-4 relative">
-        <div className="text-white text-[13px] font-medium flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Onboarding · {ent.shortName}<span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span></div>
+        <div className="flex items-center gap-3">
+          <div
+            className="sc-logo-dark"
+            style={{ height: 24, display: 'flex', alignItems: 'center', flexShrink: 0 }}
+            dangerouslySetInnerHTML={{ __html: scLogoRaw }}
+          />
+          <div className="w-px h-4 bg-white/20 mx-1"></div>
+          <div className="text-white text-[13px] font-medium flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Onboarding · {ent.shortName}</div>
+        </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setModal({
             title: 'Reset demo to baseline?',
             body: <div className="text-sm text-slate-700 space-y-3"><p>Clears all entered data and returns the demo to starting state.</p></div>,
-            footer: <><button onClick={() => setModal(null)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700">Cancel</button><button onClick={resetToBaseline} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Reset demo</button></>
+            footer: <><button onClick={() => setModal(null)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700">Cancel</button><button onClick={resetToBaseline} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700">Reset demo</button></>
           })} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white/80 border border-white/15 hover:bg-white/15"><RotateCcw size={13} />Reset</button>
           <button onClick={() => setShowWhatChanged(!showWhatChanged)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border ${showWhatChanged ? 'bg-amber-400/90 text-slate-900 border-amber-300' : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/15'}`}><Sparkles size={13} />What's new</button>
           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
@@ -319,20 +400,20 @@ export default function S2BOModule1V2() {
     </div>
   );
 
-  const SpecBadge = ({ type, children }) => {
+  const SpecBadge = ({ type, children }: { type: SpecType; children?: React.ReactNode }) => {
     if (!showWhatChanged) return null;
-    const styles = { 'spec-a': 'bg-emerald-100 text-emerald-800 border-emerald-300', 'spec-b': 'bg-amber-100 text-amber-900 border-amber-300', 'enhanced': 'bg-blue-100 text-blue-800 border-blue-300' };
-    const labels = { 'spec-a': 'Spec A · unchanged', 'spec-b': 'New in Spec B', 'enhanced': 'Enhanced from Spec A' };
+    const styles: Record<SpecType, string> = { 'spec-a': 'bg-emerald-100 text-emerald-800 border-emerald-300', 'spec-b': 'bg-amber-100 text-amber-900 border-amber-300', 'enhanced': 'bg-blue-100 text-blue-800 border-blue-300' };
+    const labels: Record<SpecType, string> = { 'spec-a': 'Spec A · unchanged', 'spec-b': 'New in Spec B', 'enhanced': 'Enhanced from Spec A' };
     return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${styles[type]} ml-2 align-middle`}><Sparkles size={9} />{children || labels[type]}</span>;
   };
 
-  const SpecBOutline = ({ children, type = 'spec-b' }) => {
-    if (!showWhatChanged) return children;
-    const colors = { 'spec-a': 'ring-emerald-400/60', 'spec-b': 'ring-amber-400/60', 'enhanced': 'ring-blue-400/60' };
+  const SpecBOutline = ({ children, type = 'spec-b' as SpecType }: { children: React.ReactNode; type?: SpecType }) => {
+    if (!showWhatChanged) return <>{children}</>;
+    const colors: Record<SpecType, string> = { 'spec-a': 'ring-emerald-400/60', 'spec-b': 'ring-amber-400/60', 'enhanced': 'ring-blue-400/60' };
     return <div className={`ring-2 ${colors[type]} ring-offset-2 ring-offset-white rounded-xl`}>{children}</div>;
   };
 
-  const ConfirmField = ({ label, value, icon, source = 'registry' }) => {
+  const ConfirmField = ({ label, value, icon, source = 'registry' }: { label: string; value: string; icon?: React.ReactNode; source?: 'registry' | 'document' | 'client' }) => {
     const styles = { registry: 'bg-blue-50/50 border-blue-100', document: 'bg-indigo-50/50 border-indigo-100', client: 'bg-emerald-50/40 border-emerald-100' };
     return (
       <div className={`px-3 py-2.5 rounded-lg border ${styles[source]} flex items-center gap-2.5`}>
@@ -343,7 +424,7 @@ export default function S2BOModule1V2() {
     );
   };
 
-  const InputField = ({ label, value, onChange, placeholder, disabled, note, type = 'text' }) => (
+  const InputField = ({ label, value, onChange, placeholder, disabled, note, type = 'text' }: { label: string; value: string | number; onChange: (v: string) => void; placeholder?: string; disabled?: boolean; note?: string; type?: string }) => (
     <div>
       <label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">{label}</label>
       <input type={type} value={value || ''} onChange={(e) => !disabled && onChange(e.target.value)} placeholder={placeholder} disabled={disabled} className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none ${disabled ? 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'}`} />
@@ -351,7 +432,7 @@ export default function S2BOModule1V2() {
     </div>
   );
 
-  const PipelineStep = ({ n, name, desc, active, done, detail }) => (
+  const PipelineStep = ({ n, name, desc, active, done, detail }: { n: number | string; name: string; desc: string; active: boolean; done: boolean; detail?: string | null }) => (
     <div className={`rounded-lg border ${active ? 'border-purple-400 bg-white shadow-sm' : done ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200 bg-white'}`}>
       <div className="flex items-center gap-3 px-3 py-2.5">
         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${done ? 'bg-emerald-500 text-white' : active ? 'bg-purple-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500'}`}>{done ? <Check size={13} /> : n}</div>
@@ -368,7 +449,7 @@ export default function S2BOModule1V2() {
         <div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">DONE</div>
       </div>
       <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mt-5 flex items-start gap-3"><Check size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" /><div className="text-sm text-emerald-900">Application started for <strong>{ent.name}</strong>. {entity === 'meridian' ? 'CLM has pre-filled what it could from public registries.' : 'No registry data yet — upload your documents from Company Details.'}</div></div>
-      <div className="mt-6 flex justify-end gap-2"><button onClick={() => setSection('company')} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-2">Continue to Company details<ChevronRight size={16} /></button></div>
+      <div className="mt-6 flex justify-end gap-2"><button onClick={() => setSection('company')} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-2">Continue to Company details<ChevronRight size={16} /></button></div>
     </div>
   );
 
@@ -400,14 +481,14 @@ export default function S2BOModule1V2() {
                 <div className="text-sm font-semibold text-slate-900">Have your incorporation pack?</div>
                 <div className="text-xs text-slate-600 mt-0.5">Cert of Incorporation, MAA, Board Resolution, Director ID. We classify, extract, reconcile and populate this section.</div>
               </div>
-              <button onClick={runAureliusPack} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed">{docIntelState.isProcessing ? 'Processing...' : 'Upload SPV pack'}</button>
+              <button onClick={runAureliusPack} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed">{docIntelState.isProcessing ? 'Processing...' : 'Upload SPV pack'}</button>
             </div>
           </SpecBOutline>
         ) : isMeridian ? (
           <div className="mt-5 rounded-xl border border-blue-300 bg-gradient-to-br from-blue-50 to-white p-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0"><Upload size={18} /></div>
             <div className="flex-1"><div className="text-sm font-semibold text-slate-900">Got your incorporation documents?</div><div className="text-xs text-slate-600 mt-0.5">Upload them and we'll extract the rest.</div></div>
-            <button onClick={() => setSection('documents')} className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">Upload</button>
+            <button onClick={() => setSection('documents')} className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700">Upload</button>
           </div>
         ) : (
           <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 flex items-center gap-4">
@@ -501,13 +582,13 @@ export default function S2BOModule1V2() {
 
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('start')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-400 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={handleContinue} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
+          <button onClick={handleContinue} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
     );
   };
 
-  const RequirementCard = ({ label, detail, checkable, defaultChecked, checked, note, optional }) => {
+  const RequirementCard = ({ label, detail, checkable, defaultChecked, checked, note, optional }: { label: string; detail: string; checkable?: boolean; defaultChecked?: boolean; checked?: boolean; note?: string; optional?: boolean }) => {
     const [isChecked, setIsChecked] = useState(defaultChecked || checked || false);
     const isFixed = checked !== undefined && !checkable;
     return (
@@ -550,13 +631,14 @@ export default function S2BOModule1V2() {
             <RequirementCard label="Local document submission" detail="ACRA business profile is primary identity document. Foreign-language documents require certified English translation." checked={true} note="ACRA profile attached" />
           </div>
         </div>
-        <div className="mt-6 flex justify-end"><button onClick={() => { setComplianceSubProgress(prev => ({ ...prev, country: 100 })); setComplianceSubsection('kyc-narrative'); showToast('Country requirements saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button></div>
+        <div className="mt-6 flex justify-end"><button onClick={() => { setComplianceSubProgress(prev => ({ ...prev, country: 100 })); setComplianceSubsection('kyc-narrative'); showToast('Country requirements saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button></div>
       </div>
     );
   };
 
   const renderKycNarrativeSub = () => {
-    const setNarrativeField = (key, value) => setKycNarrative(prev => ({ ...prev, [key]: value }));
+    type KycKey = keyof typeof kycNarrative;
+    const setNarrativeField = (key: KycKey, value: string) => setKycNarrative(prev => ({ ...prev, [key]: value }));
     return (
       <div>
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-base font-semibold text-slate-900">About your business</div><div className="text-xs text-slate-500">Help us understand the nature and scale.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">CLUSTER MODE</div></div>
@@ -578,7 +660,7 @@ export default function S2BOModule1V2() {
           <div className="flex items-center gap-3 mb-4"><div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">2</div><h3 className="text-sm font-semibold text-slate-900">Source of funds</h3></div>
           <div className="ml-9"><textarea value={kycNarrative.sourceOfFunds} onChange={(e) => setNarrativeField('sourceOfFunds', e.target.value)} placeholder="Where do the funds originate? e.g. trading revenue, capital injection..." rows={2} className="w-full max-w-2xl px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none" /></div>
         </div>
-        <div className="mt-7 flex justify-end"><button onClick={() => { const required = ['businessDescription', 'countriesTraded', 'productsServices', 'sourceOfFunds']; const allFilled = required.every(f => kycNarrative[f] && kycNarrative[f].trim()); const anyFilled = Object.values(kycNarrative).some(v => v && v.trim()); const progress = allFilled ? 100 : anyFilled ? 50 : 0; setComplianceSubProgress(prev => ({ ...prev, 'kyc-narrative': progress })); setComplianceSubsection('kyc-questions'); showToast(progress === 100 ? 'Business info complete' : 'Saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button></div>
+        <div className="mt-7 flex justify-end"><button onClick={() => { const required: KycKey[] = ['businessDescription', 'countriesTraded', 'productsServices', 'sourceOfFunds']; const allFilled = required.every(f => kycNarrative[f] && kycNarrative[f].trim()); const anyFilled = Object.values(kycNarrative).some(v => v && v.trim()); const progress = allFilled ? 100 : anyFilled ? 50 : 0; setComplianceSubProgress(prev => ({ ...prev, 'kyc-narrative': progress })); setComplianceSubsection('kyc-questions'); showToast(progress === 100 ? 'Business info complete' : 'Saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button></div>
       </div>
     );
   };
@@ -593,8 +675,8 @@ export default function S2BOModule1V2() {
     const currentIdx = kycQuestionsState.currentIdx;
     const currentQuestion = questions[currentIdx];
     const isLast = currentIdx === questions.length - 1;
-    const setAnswer = (qid, value) => setKycQuestionsState(prev => ({ ...prev, answers: { ...prev.answers, [qid]: value } }));
-    const setFollowup = (qid, value) => setKycQuestionsState(prev => ({ ...prev, followups: { ...prev.followups, [qid]: value } }));
+    const setAnswer = (qid: string, value: string) => setKycQuestionsState(prev => ({ ...prev, answers: { ...prev.answers, [qid]: value } }));
+    const setFollowup = (qid: string, value: string) => setKycQuestionsState(prev => ({ ...prev, followups: { ...prev.followups, [qid]: value } }));
     const goNext = () => {
       const answer = kycQuestionsState.answers[currentQuestion.id];
       if (answer === undefined) { showToast('Pick Yes or No.'); return; }
@@ -623,17 +705,17 @@ export default function S2BOModule1V2() {
         {currentAnswer === 'no' && <div className="max-w-2xl mt-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-start gap-2.5 animate-fadein"><Check size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" /><div className="text-xs text-emerald-900">Noted.</div></div>}
         <div className="mt-7 flex justify-between">
           <button onClick={() => { if (currentIdx > 0) setKycQuestionsState(prev => ({ ...prev, currentIdx: prev.currentIdx - 1 })); else setComplianceSubsection('kyc-narrative'); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={goNext} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">{isLast ? 'Continue to declarations' : 'Next'}<ChevronRight size={14} /></button>
+          <button onClick={goNext} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">{isLast ? 'Continue to declarations' : 'Next'}<ChevronRight size={14} /></button>
         </div>
       </div>
     );
   };
 
   const renderDeclarationsSub = () => {
-    const DelegationOption = ({ icon, title, desc, onClick }) => (
+    const DelegationOption = ({ icon, title, desc, onClick }: { icon: React.ReactNode; title: string; desc: string; onClick: () => void }) => (
       <button onClick={onClick} className="w-full text-left border-2 border-slate-200 rounded-xl px-4 py-3.5 hover:border-blue-500 hover:bg-blue-50/30 flex items-start gap-3.5"><div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">{icon}</div><div className="flex-1"><div className="text-sm font-semibold text-slate-900">{title}</div><div className="text-xs text-slate-600 mt-0.5 leading-relaxed">{desc}</div></div></button>
     );
-    const DelegationConfirmation = ({ recipient, email, code, path }) => (
+    const DelegationConfirmation = ({ recipient, email, code, path }: { recipient: string; email: string; code: string; path: string }) => (
       <div className="space-y-3">
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-start gap-2.5 text-xs text-emerald-900"><Check size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" /><div>{recipient} will receive the email below. {path === 'specialist' ? 'Access expires on submission or in 7 days.' : 'They register once on arrival.'}</div></div>
         <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -652,12 +734,13 @@ export default function S2BOModule1V2() {
         <div className="text-xs text-slate-600 mb-4 leading-relaxed">Pick how you'd like to handle FATCA & CRS.</div>
         <div className="space-y-2.5">
           <DelegationOption icon={<User size={18} />} title="I'll complete it myself" desc="Walk through five short questions." onClick={() => { setDelegationChoice('self'); setModal(null); }} />
-          <DelegationOption icon={<Users size={18} />} title="Invite a team member" desc="Persistent access. Best for a colleague across multiple sections." onClick={() => { setDelegationChoice('jane'); setModal({ title: 'Invitation sent to Jane Liu', body: <DelegationConfirmation recipient="Jane" email="jane.liu@meridian.com" code="SC-MER-J7K2" path="team" />, footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg">Done</button> }); showToast('Jane invited'); }} />
-          <DelegationOption icon={<UserCheck size={18} />} title="One-time request to a specialist" desc="Scoped access. Expires on submission." onClick={() => { setDelegationChoice('rose'); setModal({ title: 'Request sent to Rose Chen', body: <DelegationConfirmation recipient="Rose" email="rose.chen@meridian.com" code="SC-MER-F7K2" path="specialist" />, footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg">Done</button> }); showToast('Specialist request sent'); }} />
+          <DelegationOption icon={<Users size={18} />} title="Invite a team member" desc="Persistent access. Best for a colleague across multiple sections." onClick={() => { setDelegationChoice('jane'); setModal({ title: 'Invitation sent to Jane Liu', body: <DelegationConfirmation recipient="Jane" email="jane.liu@meridian.com" code="SC-MER-J7K2" path="team" />, footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-full">Done</button> }); showToast('Jane invited'); }} />
+          <DelegationOption icon={<UserCheck size={18} />} title="One-time request to a specialist" desc="Scoped access. Expires on submission." onClick={() => { setDelegationChoice('rose'); setModal({ title: 'Request sent to Rose Chen', body: <DelegationConfirmation recipient="Rose" email="rose.chen@meridian.com" code="SC-MER-F7K2" path="specialist" />, footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-full">Done</button> }); showToast('Specialist request sent'); }} />
         </div>
       </div>
     );
-    const ComplianceFormCard = ({ letter, name, desc, status, onClick, disabled }) => {
+    const ComplianceFormCard = ({ letter: initialLetter, name, desc, status, onClick, disabled }: { letter: string; name: string; desc: string; status?: string | null; onClick?: () => void; disabled?: boolean }) => {
+      let letter = initialLetter;
       let statusText = 'Not started', statusColor = 'text-slate-400', cardBg = 'border-slate-200 hover:border-blue-400', iconBg = 'bg-blue-50 text-blue-600';
       if (status === 'self') { statusText = 'Continue'; statusColor = 'text-blue-600 font-semibold'; cardBg = 'border-blue-300 bg-blue-50/30'; }
       else if (status === 'jane') { statusText = '⏱ Awaiting Jane'; statusColor = 'text-amber-600 font-medium'; cardBg = 'border-amber-300 bg-amber-50/40'; iconBg = 'bg-amber-500 text-white'; letter = 'J'; }
@@ -679,7 +762,7 @@ export default function S2BOModule1V2() {
   };
 
   const ComplianceSection = () => {
-    const subsections = [
+    const subsections: { id: ComplianceSubId; label: string; mode: string }[] = [
       { id: 'country', label: 'Country requirement', mode: 'cluster' },
       { id: 'kyc-narrative', label: 'About your business', mode: 'cluster' },
       { id: 'kyc-questions', label: 'Risk questions', mode: 'focus' },
@@ -700,13 +783,13 @@ export default function S2BOModule1V2() {
         <div className="mt-6">{renderSub()}</div>
         <div className="mt-7 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('company')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={() => { const declProgress = delegationChoice ? 100 : complianceSubProgress.declarations; const finalSub = { ...complianceSubProgress, declarations: declProgress }; const totalProgress = Math.round(Object.values(finalSub).reduce((a, b) => a + b, 0) / 4); if (declProgress > complianceSubProgress.declarations) setComplianceSubProgress(finalSub); advanceCompletion('compliance', totalProgress); setSection('accounts'); showToast(totalProgress === 100 ? 'Compliance complete' : 'Progress saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
+          <button onClick={() => { const declProgress = delegationChoice ? 100 : complianceSubProgress.declarations; const finalSub = { ...complianceSubProgress, declarations: declProgress }; const totalProgress = Math.round(Object.values(finalSub).reduce((a, b) => a + b, 0) / 4); if (declProgress > complianceSubProgress.declarations) setComplianceSubProgress(finalSub); advanceCompletion('compliance', totalProgress); setSection('accounts'); showToast(totalProgress === 100 ? 'Compliance complete' : 'Progress saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
     );
   };
 
-  const ServiceCheckbox = ({ label, desc, checked, onClick }) => (
+  const ServiceCheckbox = ({ label, desc, checked, onClick }: { label: string; desc: string; checked: boolean; onClick: () => void }) => (
     <button onClick={onClick} className={`w-full text-left p-3 rounded-lg border-2 flex items-start gap-3 ${checked ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'}`}>
       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${checked ? 'border-blue-600 bg-blue-600' : 'border-slate-400'}`}>{checked && <Check size={10} className="text-white" />}</div>
       <div><div className="text-xs font-semibold text-slate-900">{label}</div><div className="text-[11px] text-slate-600">{desc}</div></div>
@@ -715,10 +798,10 @@ export default function S2BOModule1V2() {
 
   const AccountsSection = () => {
     const [showAdd, setShowAdd] = useState(false);
-    const [newAccount, setNewAccount] = useState({ currency: '', purpose: '', services: [] });
+    const [newAccount, setNewAccount] = useState<{ currency: string; purpose: string; services: string[] }>({ currency: '', purpose: '', services: [] });
     const addAccount = () => { if (!newAccount.currency) { showToast('Pick a currency.'); return; } setAccounts([...accounts, { ...newAccount, id: Date.now() }]); setNewAccount({ currency: '', purpose: '', services: [] }); setShowAdd(false); showToast('Account added'); };
-    const removeAccount = (id) => { setAccounts(accounts.filter(a => a.id !== id)); showToast('Account removed'); };
-    const toggleService = (svc) => setNewAccount(prev => ({ ...prev, services: prev.services.includes(svc) ? prev.services.filter(s => s !== svc) : [...prev.services, svc] }));
+    const removeAccount = (id: number) => { setAccounts(accounts.filter(a => a.id !== id)); showToast('Account removed'); };
+    const toggleService = (svc: string) => setNewAccount(prev => ({ ...prev, services: prev.services.includes(svc) ? prev.services.filter(s => s !== svc) : [...prev.services, svc] }));
     return (
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Set up your accounts</div><div className="text-sm text-slate-500">{entity === 'meridian' ? 'Confirm or adjust selected accounts.' : 'Add accounts. One per currency.'}</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">CLUSTER MODE</div></div>
@@ -752,19 +835,19 @@ export default function S2BOModule1V2() {
                   <ServiceCheckbox label="Sweeping" desc="Auto-balance funds" checked={newAccount.services.includes('sweeping')} onClick={() => toggleService('sweeping')} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2"><button onClick={() => { setShowAdd(false); setNewAccount({ currency: '', purpose: '', services: [] }); }} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700">Cancel</button><button onClick={addAccount} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700">Add</button></div>
+              <div className="flex justify-end gap-2"><button onClick={() => { setShowAdd(false); setNewAccount({ currency: '', purpose: '', services: [] }); }} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700">Cancel</button><button onClick={addAccount} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700">Add</button></div>
             </div>
           )}
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('compliance')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={() => { if (accounts.length === 0) { showToast('Add at least one account.'); return; } advanceCompletion('accounts', 100); setSection('mandate'); showToast('Accounts saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
+          <button onClick={() => { if (accounts.length === 0) { showToast('Add at least one account.'); return; } advanceCompletion('accounts', 100); setSection('mandate'); showToast('Accounts saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
     );
   };
 
-  const SigningOption = ({ label, desc, selected, onClick }) => (
+  const SigningOption = ({ label, desc, selected, onClick }: { label: string; desc: string; selected: boolean; onClick: () => void }) => (
     <button onClick={onClick} className={`w-full text-left p-4 rounded-xl border-2 flex items-start gap-3.5 ${selected ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-blue-50/30'}`}>
       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${selected ? 'border-blue-600 bg-blue-600' : 'border-slate-400'}`}>{selected && <div className="w-2 h-2 rounded-full bg-white"></div>}</div>
       <div><div className={`text-sm font-semibold ${selected ? 'text-slate-900' : 'text-slate-800'}`}>{label}</div><div className="text-xs text-slate-600 mt-0.5">{desc}</div></div>
@@ -796,7 +879,7 @@ export default function S2BOModule1V2() {
   const MandateAiView = () => {
     const stage = mandateAiStage;
     const done = mandateMode === 'ai-extracted';
-    const [expanded, setExpanded] = useState({});
+    const [expanded, setExpanded] = useState<Record<number, boolean>>({});
     const narrative = {
       classify: 'Identified as: Board Resolution (signed, dated 15 Mar 2026). Standard board mandate format covering banking authority and signatory appointments.',
       extract: `Extracted: ${MANDATE_AI.signatories.length} named signatories with roles and identifiers, ${MANDATE_AI.rules.length} signing rules with limits and conditions, Board Resolution reference ${MANDATE_AI.boardResRef}.`,
@@ -921,7 +1004,7 @@ export default function S2BOModule1V2() {
   };
 
   const MandateStep3Sub = () => {
-    const updateLimit = (id, limit) => setSignatories(signatories.map(s => s.id === id ? { ...s, limit: parseInt(limit) || 0 } : s));
+    const updateLimit = (id: number, limit: string) => setSignatories(signatories.map(s => s.id === id ? { ...s, limit: parseInt(limit) || 0 } : s));
     return (
       <div>
         <div className="text-[11px] text-blue-600 uppercase tracking-wider font-semibold mb-3">Mandate · Step 3 of 6</div>
@@ -946,7 +1029,7 @@ export default function S2BOModule1V2() {
     const minA = catA.length ? Math.min(...catA.map(s => s.limit || 0)) : 0;
     const maxB = catB.length ? Math.max(...catB.map(s => s.limit || 0)) : 0;
     const inconsistency = catA.length && catB.length && (minA < maxB);
-    const CategorySummary = ({ cat, sigs }) => {
+    const CategorySummary = ({ cat, sigs }: { cat: string; sigs: Signatory[] }) => {
       const max = Math.max(...sigs.map(s => s.limit || 0));
       const min = Math.min(...sigs.map(s => s.limit || 0));
       return (
@@ -971,7 +1054,7 @@ export default function S2BOModule1V2() {
   };
 
   const MandateStep5Sub = () => {
-    const [hasSpecial, setHasSpecial] = useState(null);
+    const [hasSpecial, setHasSpecial] = useState<string | null>(null);
     return (
       <div>
         <div className="text-[11px] text-blue-600 uppercase tracking-wider font-semibold mb-3">Mandate · Step 5 of 6</div>
@@ -996,7 +1079,7 @@ export default function S2BOModule1V2() {
         <div className="max-w-3xl bg-slate-50 border border-slate-200 rounded-xl p-6">
           <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-3">Your mandate summary</div>
           <div className="space-y-3 text-sm text-slate-800 leading-relaxed">
-            <div className="flex gap-3"><Check size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" /><div><strong>Signing rule:</strong> {ruleText[signingRule] || 'Not yet set.'}</div></div>
+            <div className="flex gap-3"><Check size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" /><div><strong>Signing rule:</strong> {signingRule ? ruleText[signingRule] : 'Not yet set.'}</div></div>
             <div className="flex gap-3"><Check size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" /><div><strong>Authorised signatories ({signatories.length}):</strong><ul className="mt-1.5 ml-1 space-y-1">{signatories.map(s => <li key={s.id} className="text-slate-700">{s.name} ({s.role}) · Cat {s.category} · up to <strong>{formatMoney(s.limit || 0)}</strong></li>)}</ul></div></div>
             <div className="flex gap-3"><Check size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" /><div><strong>Special arrangements:</strong> None.</div></div>
           </div>
@@ -1029,7 +1112,7 @@ export default function S2BOModule1V2() {
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={goPrev} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <div className="text-xs text-slate-400">Step {mandateStep} of {totalSteps}</div>
-          <button onClick={goNext} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">{mandateStep === totalSteps ? 'Complete' : 'Continue'}<ChevronRight size={14} /></button>
+          <button onClick={goNext} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">{mandateStep === totalSteps ? 'Complete' : 'Continue'}<ChevronRight size={14} /></button>
         </div>
       </div>
     );
@@ -1042,8 +1125,8 @@ export default function S2BOModule1V2() {
     return <MandateManual />;
   };
 
-  const RoleBadge = ({ role }) => {
-    const styles = { 'Admin': 'bg-purple-100 text-purple-700', 'Authoriser': 'bg-blue-100 text-blue-700', 'Inputter': 'bg-emerald-100 text-emerald-700', 'Viewer': 'bg-slate-100 text-slate-600' };
+  const RoleBadge = ({ role }: { role: string }) => {
+    const styles: Record<string, string> = { 'Admin': 'bg-purple-100 text-purple-700', 'Authoriser': 'bg-blue-100 text-blue-700', 'Inputter': 'bg-emerald-100 text-emerald-700', 'Viewer': 'bg-slate-100 text-slate-600' };
     return <span className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded ${styles[role] || styles.Viewer}`}>{role}</span>;
   };
 
@@ -1081,7 +1164,7 @@ export default function S2BOModule1V2() {
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('mandate')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={() => { advanceCompletion('s2b', 100); setSection('documents'); showToast('S2B setup saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
+          <button onClick={() => { advanceCompletion('s2b', 100); setSection('documents'); showToast('S2B setup saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
     );
@@ -1104,7 +1187,8 @@ export default function S2BOModule1V2() {
       ...signatories.map(s => ({ id: `sig-${s.id}`, name: s.name, role: s.role })),
       ...s2bUsers.filter(u => u.role !== 'Viewer').map(u => ({ id: `user-${u.id}`, name: u.name, role: `S2B ${u.role}` }))
     ];
-    const dedupedPeople = peopleRaw.reduce((acc, p) => {
+    type PersonEntry = { id: string; name: string; role: string; roles: string[] };
+    const dedupedPeople = peopleRaw.reduce<PersonEntry[]>((acc, p) => {
       const existing = acc.find(x => x.name === p.name);
       if (existing) existing.roles.push(p.role);
       else acc.push({ ...p, roles: [p.role] });
@@ -1112,14 +1196,14 @@ export default function S2BOModule1V2() {
     }, []);
 
     const idNarratives = {
-      passport: (name, matched) => ({
+      passport: (name: string, matched: boolean) => ({
         classify: 'Identified as: Passport (MRZ detected, biographical page format).',
         extract: `Extracted: full name ("${name}"), passport number, nationality, DoB, expiry.`,
         reconcile: matched ? `Name matches "${name}" exactly. No discrepancies.` : `Name does NOT match record. Review required.`,
         validate: 'Passport current (expires > 6 months). MRZ checksum valid.',
         apply: matched ? `Identity verified for ${name}.` : `Cannot apply — name mismatch flagged.`
       }),
-      nric: (name, matched) => ({
+      nric: (name: string, matched: boolean) => ({
         classify: 'Identified as: Singapore NRIC.',
         extract: `Extracted: name ("${name}"), NRIC number, DoB, address.`,
         reconcile: matched ? `Name matches "${name}" exactly.` : `Name does NOT match.`,
@@ -1128,7 +1212,7 @@ export default function S2BOModule1V2() {
       })
     };
 
-    const startIdUpload = (pid, idType, name) => {
+    const startIdUpload = (pid: string, idType: 'passport' | 'nric', name: string) => {
       const matched = name !== 'Marcus Chen';
       const narrative = idNarratives[idType](name, matched);
       setDocIntelState(prev => ({ ...prev, isProcessing: true, processingStep: 1, showSidePanel: true, currentDocId: `${pid}-${idType}`, currentNarrative: narrative }));
@@ -1142,8 +1226,8 @@ export default function S2BOModule1V2() {
       }, 4500);
     };
 
-    const startDocUpload = (docId) => {
-      const narratives = {
+    const startDocUpload = (docId: string) => {
+      const narratives: Record<string, NarrativeStep> = {
         incorp: { classify: 'Identified as: Certificate of Incorporation (ACRA, 98% conf).', extract: 'Extracted 6 fields: legal name, entity type, UEN, address, industry.', reconcile: isAurelius ? 'No prior data. Fields applied directly.' : 'All values match ACRA-pulled data.', validate: 'Document current. ACRA seal verified.', apply: 'Company Details updated.' },
         board: { classify: 'Identified as: Board Resolution (signed, dated).', extract: 'Extracted: 4 signatories, 1 rule clause, 3 limit thresholds.', reconcile: '3 of 4 signatories match Mandate. 1 new (Marcus Chen, Director).', validate: 'Properly signed. Limits internally consistent.', apply: 'Mandate section updated.' },
         constitution: { classify: 'Identified as: MAA (SG standard).', extract: 'Share structure 1M @ S$1. 2 directors.', reconcile: 'Aligns with ACRA filing.', validate: 'Executed version with signatures.', apply: 'Beneficial ownership pre-populated.' }
@@ -1159,7 +1243,7 @@ export default function S2BOModule1V2() {
       }, 4500);
     };
 
-    const isUploaded = (id) => id === 'acra' || docIntelState.uploadedDocs.includes(id);
+    const isUploaded = (id: string) => id === 'acra' || docIntelState.uploadedDocs.includes(id);
     const idVerified = Object.values(idUploads).filter(u => u.matched).length;
     const idMismatched = Object.values(idUploads).filter(u => u.uploaded && !u.matched).length;
     const aiOn = specMode === 'b';
@@ -1173,7 +1257,7 @@ export default function S2BOModule1V2() {
               <div className="rounded-xl border-2 border-dashed border-blue-300 bg-gradient-to-br from-blue-50 to-white p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0"><Upload size={20} /></div>
                 <div className="flex-1"><div className="text-sm font-semibold text-slate-900">Drop documents or click to browse</div><div className="text-xs text-slate-600 mt-0.5">{aiOn ? 'Auto-classified, extracted, validated' : 'Attached to the application and reviewed by the bank'}</div></div>
-                <button onClick={() => { if (!aiOn) { showToast('Document attached.'); return; } if (isAurelius && !isUploaded('incorp')) startDocUpload('incorp'); else if (!isUploaded('board')) startDocUpload('board'); else showToast('All docs uploaded for demo.'); }} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:bg-slate-300">{docIntelState.isProcessing ? 'Processing...' : 'Choose files'}</button>
+                <button onClick={() => { if (!aiOn) { showToast('Document attached.'); return; } if (isAurelius && !isUploaded('incorp')) startDocUpload('incorp'); else if (!isUploaded('board')) startDocUpload('board'); else showToast('All docs uploaded for demo.'); }} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300">{docIntelState.isProcessing ? 'Processing...' : 'Choose files'}</button>
               </div>
             </SpecBOutline>
             <div className="mt-6">
@@ -1252,7 +1336,7 @@ export default function S2BOModule1V2() {
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('s2b')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={() => { advanceCompletion('documents', 100); setSection('review'); showToast('Documents saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
+          <button onClick={() => { advanceCompletion('documents', 100); setSection('review'); showToast('Documents saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
     );
@@ -1268,7 +1352,8 @@ export default function S2BOModule1V2() {
     return renderPostSubmission(generatedDocs);
   };
 
-  const renderPreSubmission = (generatedDocs) => {
+  type GeneratedDoc = { id: string; name: string; purpose: string; signers: { name: string; role: string }[] };
+  const renderPreSubmission = (generatedDocs: GeneratedDoc[]) => {
     const sectionsForReview = [
       { name: 'Get started', completion: sectionCompletion.start, summary: 'Application created' },
       { name: 'Company details', completion: sectionCompletion.company, summary: ent.name },
@@ -1284,7 +1369,7 @@ export default function S2BOModule1V2() {
     const submitApp = () => {
       advanceCompletion('review', 100);
       setAppStatus('bank-review');
-      const initialSigning = {};
+      const initialSigning: Record<string, string> = {};
       generatedDocs.forEach(doc => doc.signers.forEach(signer => { initialSigning[`${doc.id}-${signer.name}`] = 'pending'; }));
       setSigningState(initialSigning);
       showToast('Submitted. Bank review starting.');
@@ -1318,20 +1403,20 @@ export default function S2BOModule1V2() {
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <button onClick={() => setSection('documents')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={submitApp} className={`px-6 py-2.5 text-sm font-semibold rounded-lg flex items-center gap-2 ${allComplete ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}><Send size={14} />{allComplete ? 'Submit for review' : 'Submit anyway'}</button>
+          <button onClick={submitApp} className={`px-6 py-2.5 text-sm font-semibold rounded-lg flex items-center gap-2 ${allComplete ? 'bg-emerald-600 text-white hover:bg-emerald-700 rounded-full' : 'bg-blue-600 text-white hover:bg-blue-700 rounded-full'}`}><Send size={14} />{allComplete ? 'Submit for review' : 'Submit anyway'}</button>
         </div>
       </div>
     );
   };
 
-  const StatusStage = ({ label, done, active, last }) => (
+  const StatusStage = ({ label, done, active, last }: { label: string; done: boolean; active: boolean; last?: boolean }) => (
     <div className="relative">
       <div className="flex items-center gap-2"><div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${done ? 'bg-emerald-500 text-white' : active ? 'bg-blue-600 text-white shadow-[0_0_0_4px_#dbeafe]' : 'bg-slate-100 text-slate-400 border border-slate-300'}`}>{done ? <Check size={13} /> : '·'}</div><div className={`text-xs font-semibold ${done ? 'text-slate-700' : active ? 'text-blue-600' : 'text-slate-400'}`}>{label}</div></div>
       {!last && <div className={`h-0.5 mt-3 ${done ? 'bg-emerald-500' : 'bg-slate-200'}`}></div>}
     </div>
   );
 
-  const ValidationLine = ({ label, status }) => (
+  const ValidationLine = ({ label, status }: { label: string; status: 'done' | 'checking' | 'queued' }) => (
     <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-blue-100">
       <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${status === 'done' ? 'bg-emerald-500 text-white' : status === 'checking' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{status === 'done' ? <Check size={12} /> : status === 'checking' ? <div className="w-2 h-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : '·'}</div>
       <div className="flex-1 text-xs text-slate-700 font-medium">{label}</div>
@@ -1339,12 +1424,12 @@ export default function S2BOModule1V2() {
     </div>
   );
 
-  const renderPostSubmission = (generatedDocs) => {
+  const renderPostSubmission = (generatedDocs: GeneratedDoc[]) => {
     const allSigned = Object.values(signingState).every(s => s === 'signed');
     const signedCount = Object.values(signingState).filter(s => s === 'signed').length;
     const totalSignatures = Object.keys(signingState).length;
     if (allSigned && appStatus === 'awaiting-signatures') setTimeout(() => { setAppStatus('activated'); showToast('All signed. Activation in progress.'); }, 600);
-    const simulateSign = (docId, signerName) => { setSigningState(prev => ({ ...prev, [`${docId}-${signerName}`]: 'signed' })); showToast(`${signerName} signed`); };
+    const simulateSign = (docId: string, signerName: string) => { setSigningState(prev => ({ ...prev, [`${docId}-${signerName}`]: 'signed' })); showToast(`${signerName} signed`); };
 
     return (
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
@@ -1374,7 +1459,7 @@ export default function S2BOModule1V2() {
                         const status = signingState[`${doc.id}-${signer.name}`];
                         return (
                           <div key={idx} className="flex items-center gap-3 py-1.5">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-semibold ${status === 'signed' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}>{status === 'signed' ? <Check size={12} /> : signer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-semibold ${status === 'signed' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}>{status === 'signed' ? <Check size={12} /> : signer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>
                             <div className="flex-1"><div className="text-xs font-semibold text-slate-900">{signer.name}</div><div className="text-[10px] text-slate-500">{signer.role}</div></div>
                             {status === 'signed' ? <span className="text-[10px] text-emerald-700 font-semibold">✓ Signed</span> : <div className="flex items-center gap-2"><span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-semibold">⏱ Pending</span>{appStatus === 'awaiting-signatures' && <button onClick={() => simulateSign(doc.id, signer.name)} className="text-[10px] text-blue-600 hover:underline font-semibold">Simulate sign</button>}</div>}
                           </div>
@@ -1412,7 +1497,7 @@ export default function S2BOModule1V2() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div className="min-h-screen bg-slate-100 font-sans">
       <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; }`}</style>
       <Banner />
       <div className="flex">
