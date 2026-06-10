@@ -1246,52 +1246,67 @@ export default function S2BOModule1V2() {
       return acc;
     }, []);
 
-    const idNarratives = {
-      passport: (name: string, matched: boolean) => ({
-        classify: 'Identified as: Passport (MRZ detected, biographical page format).',
-        extract: `Extracted: full name ("${name}"), passport number, nationality, DoB, expiry.`,
-        reconcile: matched ? `Name matches "${name}" exactly. No discrepancies.` : `Name does NOT match record. Review required.`,
-        validate: 'Passport current (expires > 6 months). MRZ checksum valid.',
-        apply: matched ? `Identity verified for ${name}.` : `Cannot apply — name mismatch flagged.`
-      }),
-      nric: (name: string, matched: boolean) => ({
-        classify: 'Identified as: Singapore NRIC.',
-        extract: `Extracted: name ("${name}"), NRIC number, DoB, address.`,
-        reconcile: matched ? `Name matches "${name}" exactly.` : `Name does NOT match.`,
-        validate: 'NRIC original, both sides clear.',
-        apply: matched ? `Identity verified.` : `Cannot apply — mismatch.`
-      })
+    const [pendingDocId, setPendingDocId] = useState<string | null>(null);
+    const [pendingId, setPendingId] = useState<{ pid: string; idType: 'passport' | 'nric'; name: string } | null>(null);
+    const localDocFileRef = useRef<HTMLInputElement>(null);
+    const localIdFileRef = useRef<HTMLInputElement>(null);
+
+    const startDocUpload = (docId: string, file?: File) => {
+      if (!file) {
+        setDocIntelState(prev => ({ ...prev, uploadedDocs: [...prev.uploadedDocs, docId] }));
+        showToast('Document attached.');
+        return;
+      }
+      setDocIntelState(prev => ({
+        ...prev, isProcessing: true, processingStep: 1, showSidePanel: true,
+        currentDocId: docId, currentNarrative: undefined,
+      }));
+      const s2 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
+      const s3 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
+      const s4 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
+
+      processDocumentPack([file])
+        .then(({ narrative }) => {
+          clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+          setDocIntelState(prev => ({
+            ...prev, processingStep: 5, isProcessing: false,
+            currentNarrative: narrative, uploadedDocs: [...prev.uploadedDocs, docId],
+          }));
+          showToast('Document processed.');
+        })
+        .catch((err) => {
+          clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+          setDocIntelState(prev => ({ ...prev, isProcessing: false, processingStep: 0 }));
+          showToast(`Processing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        });
     };
 
-    const startIdUpload = (pid: string, idType: 'passport' | 'nric', name: string) => {
-      const matched = name !== 'Marcus Chen';
-      const narrative = idNarratives[idType](name, matched);
-      setDocIntelState(prev => ({ ...prev, isProcessing: true, processingStep: 1, showSidePanel: true, currentDocId: `${pid}-${idType}`, currentNarrative: narrative }));
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
-      setTimeout(() => {
-        setDocIntelState(prev => ({ ...prev, processingStep: 5, isProcessing: false }));
-        setIdUploads(prev => ({ ...prev, [pid]: { idType, name, matched, uploaded: true } }));
-        showToast(matched ? `ID verified for ${name}` : `Name mismatch for ${name}`);
-      }, 4500);
-    };
+    const startIdUpload = (pid: string, idType: 'passport' | 'nric', name: string, file?: File) => {
+      if (!file) {
+        setIdUploads(prev => ({ ...prev, [pid]: { idType, name, matched: true, uploaded: true } }));
+        showToast(`ID attached for ${name}`);
+        return;
+      }
+      setDocIntelState(prev => ({
+        ...prev, isProcessing: true, processingStep: 1, showSidePanel: true,
+        currentDocId: `${pid}-${idType}`, currentNarrative: undefined,
+      }));
+      const s2 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
+      const s3 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
+      const s4 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
 
-    const startDocUpload = (docId: string) => {
-      const narratives: Record<string, NarrativeStep> = {
-        incorp: { classify: 'Identified as: Certificate of Incorporation (ACRA, 98% conf).', extract: 'Extracted 6 fields: legal name, entity type, UEN, address, industry.', reconcile: isAurelius ? 'No prior data. Fields applied directly.' : 'All values match ACRA-pulled data.', validate: 'Document current. ACRA seal verified.', apply: 'Company Details updated.' },
-        board: { classify: 'Identified as: Board Resolution (signed, dated).', extract: 'Extracted: 4 signatories, 1 rule clause, 3 limit thresholds.', reconcile: '3 of 4 signatories match Mandate. 1 new (Marcus Chen, Director).', validate: 'Properly signed. Limits internally consistent.', apply: 'Mandate section updated.' },
-        constitution: { classify: 'Identified as: MAA (SG standard).', extract: 'Share structure 1M @ S$1. 2 directors.', reconcile: 'Aligns with ACRA filing.', validate: 'Executed version with signatures.', apply: 'Beneficial ownership pre-populated.' }
-      };
-      const narrative = narratives[docId] || narratives.incorp;
-      setDocIntelState(prev => ({ ...prev, isProcessing: true, processingStep: 1, showSidePanel: true, currentDocId: docId, currentNarrative: narrative }));
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
-      setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
-      setTimeout(() => {
-        setDocIntelState(prev => ({ ...prev, processingStep: 5, isProcessing: false, uploadedDocs: [...prev.uploadedDocs, docId] }));
-        showToast(`Document processed.`);
-      }, 4500);
+      processIdDocument(file, name)
+        .then(({ narrative, nameMatched }) => {
+          clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+          setDocIntelState(prev => ({ ...prev, processingStep: 5, isProcessing: false, currentNarrative: narrative }));
+          setIdUploads(prev => ({ ...prev, [pid]: { idType, name, matched: nameMatched, uploaded: true } }));
+          showToast(nameMatched ? `ID verified for ${name}` : `Name mismatch — review required`);
+        })
+        .catch((err) => {
+          clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+          setDocIntelState(prev => ({ ...prev, isProcessing: false, processingStep: 0 }));
+          showToast(`Processing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        });
     };
 
     const isUploaded = (id: string) => id === 'acra' || docIntelState.uploadedDocs.includes(id);
@@ -1308,7 +1323,10 @@ export default function S2BOModule1V2() {
               <div className="rounded-xl border-2 border-dashed border-blue-300 bg-gradient-to-br from-blue-50 to-white p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0"><Upload size={20} /></div>
                 <div className="flex-1"><div className="text-sm font-semibold text-slate-900">Drop documents or click to browse</div><div className="text-xs text-slate-600 mt-0.5">{aiOn ? 'Auto-classified, extracted, validated' : 'Attached to the application and reviewed by the bank'}</div></div>
-                <button onClick={() => { if (!aiOn) { showToast('Document attached.'); return; } if (isAurelius && !isUploaded('incorp')) startDocUpload('incorp'); else if (!isUploaded('board')) startDocUpload('board'); else showToast('All docs uploaded for demo.'); }} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300">{docIntelState.isProcessing ? 'Processing...' : 'Choose files'}</button>
+                <button onClick={() => {
+                  if (!aiOn) { showToast('Document attached.'); return; }
+                  docUploadInputRef.current?.click();
+                }} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300">{docIntelState.isProcessing ? 'Processing...' : 'Choose files'}</button>
               </div>
             </SpecBOutline>
             <div className="mt-6">
@@ -1322,7 +1340,10 @@ export default function S2BOModule1V2() {
                       <div className="flex items-center gap-4">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${uploaded ? 'bg-emerald-500 text-white' : isCurrent ? 'bg-blue-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500'}`}><FileText size={16} /></div>
                         <div className="flex-1"><div className="text-sm font-semibold text-slate-900">{doc.name}</div><div className="text-xs text-slate-600">{doc.type === 'auto' ? 'Auto-fetched from ACRA' : aiOn ? `Extracts: ${doc.extracts.join(', ')}` : 'Required for review'}</div></div>
-                        {uploaded ? <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-emerald-100 text-emerald-700">{aiOn ? '✓ Verified' : '✓ Attached'}</span> : isCurrent ? <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-blue-100 text-blue-700">Processing</span> : <button onClick={() => aiOn ? startDocUpload(doc.id) : setDocIntelState(prev => ({ ...prev, uploadedDocs: [...prev.uploadedDocs, doc.id] }))} disabled={docIntelState.isProcessing} className="text-xs text-blue-600 font-semibold hover:underline disabled:text-slate-400">Upload</button>}
+                        {uploaded ? <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-emerald-100 text-emerald-700">{aiOn ? '✓ Verified' : '✓ Attached'}</span> : isCurrent ? <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-blue-100 text-blue-700">Processing</span> : <button onClick={() => {
+                          if (aiOn) { setPendingDocId(doc.id); localDocFileRef.current?.click(); }
+                          else { setDocIntelState(prev => ({ ...prev, uploadedDocs: [...prev.uploadedDocs, doc.id] })); }
+                        }} disabled={docIntelState.isProcessing} className="text-xs text-blue-600 font-semibold hover:underline disabled:text-slate-400">Upload</button>}
                       </div>
                     </div>
                   );
@@ -1345,7 +1366,13 @@ export default function S2BOModule1V2() {
                         <div className="flex-1"><div className="text-sm font-semibold text-slate-900">{person.name}</div><div className="flex items-center gap-2 mt-0.5 flex-wrap">{person.roles.map((r, i) => <span key={i} className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">{r}</span>)}</div></div>
                         {matched && <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700">✓ {upload.idType === 'passport' ? 'Passport' : 'NRIC'} {aiOn ? 'matched' : 'attached'}</span>}
                         {mismatched && <div className="flex items-center gap-2"><span className="text-[10px] uppercase tracking-wider font-semibold text-red-700">⚠ Mismatch</span><button onClick={() => setIdUploads(prev => { const n = { ...prev }; delete n[person.id]; return n; })} className="text-[10px] text-red-600 hover:underline font-semibold">Remove</button></div>}
-                        {!upload && !isCurrent && <div className="flex gap-1.5"><button onClick={() => aiOn ? startIdUpload(person.id, 'passport', person.name) : setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'passport', name: person.name, matched: true, uploaded: true } }))} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />Passport</button><button onClick={() => aiOn ? startIdUpload(person.id, 'nric', person.name) : setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'nric', name: person.name, matched: true, uploaded: true } }))} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />NRIC</button></div>}
+                        {!upload && !isCurrent && <div className="flex gap-1.5"><button onClick={() => {
+                          if (aiOn) { setPendingId({ pid: person.id, idType: 'passport', name: person.name }); localIdFileRef.current?.click(); }
+                          else { setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'passport', name: person.name, matched: true, uploaded: true } })); }
+                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />Passport</button><button onClick={() => {
+                          if (aiOn) { setPendingId({ pid: person.id, idType: 'nric', name: person.name }); localIdFileRef.current?.click(); }
+                          else { setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'nric', name: person.name, matched: true, uploaded: true } })); }
+                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />NRIC</button></div>}
                         {isCurrent && <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-blue-100 text-blue-700">Processing</span>}
                       </div>
                       {mismatched && <div className="mt-3 pt-3 border-t border-red-200"><div className="text-[11px] text-red-800 leading-relaxed"><strong>What we found:</strong> Name on uploaded ID does not match Mandate/S2B record. Re-upload correct ID, or update name in Mandate to match.</div></div>}
@@ -1389,6 +1416,28 @@ export default function S2BOModule1V2() {
           <button onClick={() => setSection('s2b')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={() => { advanceCompletion('documents', 100); setSection('review'); showToast('Documents saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
+        <input
+          ref={localDocFileRef}
+          type="file"
+          accept=".pdf,.docx,.jpg,.jpeg,.png"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0] && pendingDocId) startDocUpload(pendingDocId, e.target.files[0]);
+            e.target.value = '';
+            setPendingDocId(null);
+          }}
+        />
+        <input
+          ref={localIdFileRef}
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0] && pendingId) startIdUpload(pendingId.pid, pendingId.idType, pendingId.name, e.target.files[0]);
+            e.target.value = '';
+            setPendingId(null);
+          }}
+        />
       </div>
     );
   };
