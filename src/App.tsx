@@ -357,7 +357,7 @@ export default function S2BOModule1V2() {
   };
 
   const MissionControl = () => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-6 py-5 mx-6 mt-5">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 mx-4 mt-4 md:px-6 md:py-5 md:mx-6 md:mt-5">
       <div className="flex justify-between items-start gap-5 mb-4">
         <div>
           <div className="text-base font-semibold text-slate-900 leading-tight">{ent.name}</div>
@@ -368,13 +368,13 @@ export default function S2BOModule1V2() {
           {appStatus === 'client-draft' ? 'Client draft' : appStatus === 'bank-review' ? 'Bank review' : appStatus === 'awaiting-signatures' ? 'E-signing' : 'Activated'}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4 py-3 border-y border-slate-100">
+      <div className="grid grid-cols-3 gap-2 md:gap-4 py-3 border-y border-slate-100">
         <div><div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Products</div><div className="text-xs font-medium text-slate-900">{ent.products}</div></div>
         <div><div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Booking locations</div><div className="text-xs font-medium text-slate-900">{ent.locations}</div></div>
         <div><div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Mode</div><div className="text-xs font-medium text-slate-900">{ent.mode}</div></div>
       </div>
-      <div className="flex items-center gap-3 mt-4">
-        <div className="flex items-center gap-3 flex-1">
+      <div className="flex flex-wrap items-center gap-3 mt-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <span className="text-xl font-semibold text-blue-600">{overallProgress}%</span>
           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden max-w-xs">
             <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500" style={{ width: `${overallProgress}%` }}></div>
@@ -408,7 +408,7 @@ export default function S2BOModule1V2() {
   );
 
   const JourneyMap = () => (
-    <div className="bg-slate-50 border-r border-slate-200 px-5 py-6 w-60 flex-shrink-0">
+    <div className="bg-slate-50 border-r border-slate-200 px-3 py-5 w-44 md:px-4 md:w-52 lg:px-5 lg:py-6 lg:w-60 flex-shrink-0">
       <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-5">Your journey</div>
       <div className="relative pl-1.5">
         <div className="absolute left-3.5 top-3 bottom-3 w-0.5 bg-slate-200"></div>
@@ -441,7 +441,7 @@ export default function S2BOModule1V2() {
   const Banner = () => (
     <div className="relative overflow-hidden" style={{ background: '#2C3A87' }}>
       <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)' }}></div>
-      <div className="px-6 py-3.5 flex items-center justify-between gap-4 relative">
+      <div className="px-4 md:px-6 py-3 md:py-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 relative">
         <div className="flex items-center gap-3">
           <div
             className="sc-logo-dark"
@@ -451,22 +451,22 @@ export default function S2BOModule1V2() {
           <div className="w-px h-4 bg-white/20 mx-1"></div>
           <div className="text-white text-[13px] font-medium flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Onboarding · {ent.shortName}</div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center flex-wrap gap-2">
           <button onClick={() => setModal({
             title: 'Reset demo to baseline?',
             body: <div className="text-sm text-slate-700 space-y-3"><p>Clears all entered data and returns the demo to starting state.</p></div>,
             footer: <><button onClick={() => setModal(null)} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700">Cancel</button><button onClick={resetToBaseline} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700">Reset demo</button></>
-          })} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80 border border-white/15 hover:bg-white/15"><RotateCcw size={13} />Reset</button>
-          <button onClick={() => setShowWhatChanged(!showWhatChanged)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${showWhatChanged ? 'bg-amber-400/90 text-slate-900 border-amber-300' : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/15'}`}><Sparkles size={13} />What's new</button>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
-            <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-2">Spec</span>
-            <button onClick={() => setSpecMode('a')} className={`px-3 py-1 rounded-full text-xs font-medium ${specMode === 'a' ? 'bg-emerald-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>A<span className="ml-1.5 text-[9px] opacity-70">Foundation</span></button>
-            <button onClick={() => setSpecMode('b')} className={`px-3 py-1 rounded-full text-xs font-medium ${specMode === 'b' ? 'bg-amber-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>B<span className="ml-1.5 text-[9px] opacity-70">AI-embedded</span></button>
+          })} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80 border border-white/15 hover:bg-white/15"><RotateCcw size={13} /><span className="hidden md:inline">Reset</span></button>
+          <button onClick={() => setShowWhatChanged(!showWhatChanged)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${showWhatChanged ? 'bg-amber-400/90 text-slate-900 border-amber-300' : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/15'}`}><Sparkles size={13} /><span className="hidden md:inline">What's new</span></button>
+          <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
+            <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-1.5 hidden md:inline">Spec</span>
+            <button onClick={() => setSpecMode('a')} className={`px-2.5 md:px-3 py-1 rounded-full text-xs font-medium ${specMode === 'a' ? 'bg-emerald-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>A<span className="ml-1.5 text-[9px] opacity-70 hidden md:inline">Foundation</span></button>
+            <button onClick={() => setSpecMode('b')} className={`px-2.5 md:px-3 py-1 rounded-full text-xs font-medium ${specMode === 'b' ? 'bg-amber-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>B<span className="ml-1.5 text-[9px] opacity-70 hidden md:inline">AI-embedded</span></button>
           </div>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
-            <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-2">Demo entity</span>
-            <button onClick={() => setEntity('meridian')} className={`px-3 py-1 rounded-full text-xs font-medium ${entity === 'meridian' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Meridian<span className="ml-1.5 text-[9px] opacity-70">Registry</span></button>
-            <button onClick={() => setEntity('aurelius')} className={`px-3 py-1 rounded-full text-xs font-medium ${entity === 'aurelius' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Aurelius<span className="ml-1.5 text-[9px] opacity-70">Empty</span></button>
+          <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
+            <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-1.5 hidden md:inline">Entity</span>
+            <button onClick={() => setEntity('meridian')} className={`px-2.5 md:px-3 py-1 rounded-full text-xs font-medium ${entity === 'meridian' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Meridian<span className="ml-1.5 text-[9px] opacity-70 hidden md:inline">Registry</span></button>
+            <button onClick={() => setEntity('aurelius')} className={`px-2.5 md:px-3 py-1 rounded-full text-xs font-medium ${entity === 'aurelius' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Aurelius<span className="ml-1.5 text-[9px] opacity-70 hidden md:inline">Empty</span></button>
           </div>
         </div>
       </div>
@@ -520,7 +520,7 @@ export default function S2BOModule1V2() {
   );
 
   const StartSection = () => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
       <div className="flex items-start justify-between gap-3 mb-1">
         <div><div className="text-xl font-semibold text-slate-900">Welcome back, Alice</div><div className="text-sm text-slate-500">Pick up where you left off.</div></div>
         <div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">DONE</div>
@@ -541,7 +541,7 @@ export default function S2BOModule1V2() {
     };
 
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1">
           <div>
             <div className="text-xl font-semibold text-slate-900 flex items-center">Tell us about your company<SpecBadge type="enhanced" /></div>
@@ -580,7 +580,7 @@ export default function S2BOModule1V2() {
               <div className="flex items-center gap-2"><Sparkles size={14} className="text-purple-600" /><h3 className="text-sm font-semibold text-purple-900">Document Intelligence</h3></div>
               <button onClick={() => setDocIntelState(prev => ({ ...prev, showSidePanel: false }))} className="text-purple-400 hover:text-purple-600"><X size={16} /></button>
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
               <PipelineStep n="1" name="Classify" desc="Identify types" active={docIntelState.processingStep === 1} done={docIntelState.processingStep > 1} detail={docIntelState.processingStep >= 1 ? docIntelState.currentNarrative?.classify : null} />
               <PipelineStep n="2" name="Extract" desc="Pull fields" active={docIntelState.processingStep === 2} done={docIntelState.processingStep > 2} detail={docIntelState.processingStep >= 2 ? docIntelState.currentNarrative?.extract : null} />
               <PipelineStep n="3" name="Reconcile" desc="Cross-check" active={docIntelState.processingStep === 3} done={docIntelState.processingStep > 3} detail={docIntelState.processingStep >= 3 ? docIntelState.currentNarrative?.reconcile : null} />
@@ -721,7 +721,7 @@ export default function S2BOModule1V2() {
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-base font-semibold text-slate-900">About your business</div><div className="text-xs text-slate-500">Help us understand the nature and scale.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">CLUSTER MODE</div></div>
         <div className="mt-6 max-w-3xl">
           <div className="flex items-center gap-3 mb-4"><div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">1</div><h3 className="text-sm font-semibold text-slate-900">Nature of business</h3></div>
-          <div className="ml-9 grid grid-cols-2 gap-4">
+          <div className="ml-9 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Describe the business</label><textarea value={kycNarrative.businessDescription} onChange={(e) => setNarrativeField('businessDescription', e.target.value)} placeholder="What does the company do?" rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none" /></div>
             <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Countries traded</label><textarea value={kycNarrative.countriesTraded} onChange={(e) => setNarrativeField('countriesTraded', e.target.value)} placeholder="Where does the company trade?" rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none" /></div>
             <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Products / services</label><textarea value={kycNarrative.productsServices} onChange={(e) => setNarrativeField('productsServices', e.target.value)} placeholder="What does it sell?" rows={3} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 resize-none" /></div>
@@ -852,7 +852,7 @@ export default function S2BOModule1V2() {
       if (complianceSubsection === 'declarations') return renderDeclarationsSub();
     };
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Compliance</div><div className="text-sm text-slate-500">Country requirements, KYC, and regulatory declarations.</div></div></div>
         <div className="mt-6 flex gap-1 border-b border-slate-200 overflow-x-auto">
           {subsections.map(sub => { const isActive = complianceSubsection === sub.id; const isDone = complianceSubProgress[sub.id] === 100; return <button key={sub.id} onClick={() => setComplianceSubsection(sub.id)} className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 -mb-px flex items-center gap-2 ${isActive ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>{isDone && <Check size={12} className="text-emerald-500" />}{sub.label}<span className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded ${sub.mode === 'focus' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{sub.mode}</span></button>; })}
@@ -880,7 +880,7 @@ export default function S2BOModule1V2() {
     const removeAccount = (id: number) => { setAccounts(accounts.filter(a => a.id !== id)); showToast('Account removed'); };
     const toggleService = (svc: string) => setNewAccount(prev => ({ ...prev, services: prev.services.includes(svc) ? prev.services.filter(s => s !== svc) : [...prev.services, svc] }));
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Set up your accounts</div><div className="text-sm text-slate-500">{entity === 'meridian' ? 'Confirm or adjust selected accounts.' : 'Add accounts. One per currency.'}</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">CLUSTER MODE</div></div>
         {accounts.length > 0 && (
           <div className="mt-6">
@@ -900,7 +900,7 @@ export default function S2BOModule1V2() {
           {!showAdd ? <button onClick={() => setShowAdd(true)} className="w-full border-2 border-dashed border-slate-300 rounded-xl py-3 text-sm font-medium text-blue-600 hover:border-blue-400 hover:bg-blue-50/30 flex items-center justify-center gap-2"><Plus size={16} />Add another account</button> : (
             <div className="border border-slate-300 rounded-xl p-5 bg-white">
               <h4 className="text-sm font-semibold text-slate-900 mb-4">New account</h4>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Currency</label><select value={newAccount.currency} onChange={(e) => setNewAccount({ ...newAccount, currency: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="">Select...</option><option value="SGD">SGD</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="HKD">HKD</option><option value="GBP">GBP</option></select></div>
                 <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Purpose</label><input type="text" value={newAccount.purpose} onChange={(e) => setNewAccount({ ...newAccount, purpose: e.target.value })} placeholder="e.g. Operating" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" /></div>
               </div>
@@ -932,9 +932,9 @@ export default function S2BOModule1V2() {
   );
 
   const MandateChooser = () => (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
       <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900 flex items-center">Mandate and signing authority<SpecBadge type="spec-b" /></div><div className="text-sm text-slate-500">Upload your Board mandate and we'll extract the authorisations, or set them up manually.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold tracking-wider">FOCUS MODE</div></div>
-      <div className="mt-7 grid grid-cols-2 gap-4 max-w-4xl">
+      <div className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
         <SpecBOutline type="spec-b">
           <button onClick={() => mandateFileInputRef.current?.click()} className="w-full h-full text-left border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 hover:border-blue-500 hover:shadow-md">
             <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-4"><Upload size={22} /></div>
@@ -965,14 +965,14 @@ export default function S2BOModule1V2() {
       apply: 'Mandate section populated with extracted signatories and tier-based rules. Authority matrix derived. Ready for client confirmation.'
     };
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900 flex items-center">Mandate and signing authority<SpecBadge type="spec-b" /></div><div className="text-sm text-slate-500">{done ? 'Here is what we extracted. Review and confirm.' : 'Processing your Board mandate...'}</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold tracking-wider">AI EXTRACTION</div></div>
         <div className="mt-5 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0"><FileText size={18} /></div>
           <div className="flex-1"><div className="text-sm font-semibold text-slate-900">{MANDATE_AI.documentName}</div><div className="text-xs text-slate-500">Board Resolution ref {MANDATE_AI.boardResRef} · {done ? 'Extraction complete' : 'Processing...'}</div></div>
           {done && <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-emerald-100 text-emerald-700">✓ Extracted</span>}
         </div>
-        <div className="mt-5 grid grid-cols-5 gap-2">
+        <div className="mt-5 grid grid-cols-3 md:grid-cols-5 gap-2">
           <PipelineStep n="1" name="Classify" desc="Identify type" active={stage === 1} done={stage > 1} detail={stage >= 1 ? narrative.classify : null} />
           <PipelineStep n="2" name="Extract" desc="Pull data" active={stage === 2} done={stage > 2} detail={stage >= 2 ? narrative.extract : null} />
           <PipelineStep n="3" name="Reconcile" desc="Match ACRA" active={stage === 3} done={stage > 3} detail={stage >= 3 ? narrative.reconcile : null} />
@@ -1067,7 +1067,7 @@ export default function S2BOModule1V2() {
           ))}
           {!showAdd ? <button onClick={() => setShowAdd(true)} className="w-full border-2 border-dashed border-slate-300 rounded-xl py-3 text-sm font-medium text-blue-600 flex items-center justify-center gap-2"><Plus size={16} />Add signatory</button> : (
             <div className="border border-slate-300 rounded-xl p-4 bg-white">
-              <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 <InputField label="Full name" value={newSig.name} onChange={(v) => setNewSig({ ...newSig, name: v })} placeholder="Sarah Lee" />
                 <InputField label="Role" value={newSig.role} onChange={(v) => setNewSig({ ...newSig, role: v })} placeholder="Director" />
                 <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Category</label><select value={newSig.category} onChange={(e) => setNewSig({ ...newSig, category: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div>
@@ -1182,7 +1182,7 @@ export default function S2BOModule1V2() {
       if (mandateStep === 6) return <MandateStep6Sub />;
     };
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Set up your mandate</div><div className="text-sm text-slate-500">Branching decisions, one question at a time.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold tracking-wider">FOCUS MODE</div></div>
         <div className="flex gap-1.5 mt-7 mb-7">{Array.from({ length: totalSteps }, (_, i) => i + 1).map(n => <div key={n} className={`flex-1 h-1 rounded-full ${n <= mandateStep ? 'bg-blue-500' : 'bg-slate-200'}`} />)}</div>
         {renderStep()}
@@ -1212,7 +1212,7 @@ export default function S2BOModule1V2() {
     const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Inputter', dailyLimit: 50000 });
     const addUser = () => { if (!newUser.name || !newUser.email) { showToast('Name and email required.'); return; } setS2bUsers([...s2bUsers, { ...newUser, id: Date.now() }]); setNewUser({ name: '', email: '', role: 'Inputter', dailyLimit: 50000 }); setShowAdd(false); showToast('User added'); };
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Straight2Bank setup</div><div className="text-sm text-slate-500">Users, roles, per-user transaction limits.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold tracking-wider">CLUSTER MODE</div></div>
         <div className="mt-7">
           <div className="flex items-center gap-3 mb-4"><div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">1</div><h3 className="text-sm font-semibold text-slate-900">Online banking users</h3></div>
@@ -1228,7 +1228,7 @@ export default function S2BOModule1V2() {
             ))}
             {!showAdd ? <button onClick={() => setShowAdd(true)} className="w-full border-2 border-dashed border-slate-300 rounded-xl py-3 text-sm font-medium text-blue-600 flex items-center justify-center gap-2"><Plus size={16} />Add user</button> : (
               <div className="border border-slate-300 rounded-xl p-4 bg-white">
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <InputField label="Name" value={newUser.name} onChange={(v) => setNewUser({ ...newUser, name: v })} placeholder="Full name" />
                   <InputField label="Email" value={newUser.email} onChange={(v) => setNewUser({ ...newUser, email: v })} placeholder="email@company.com" />
                   <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Role</label><select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Admin">Admin</option><option value="Authoriser">Authoriser</option><option value="Inputter">Inputter</option><option value="Viewer">Viewer</option></select></div>
@@ -1341,9 +1341,9 @@ export default function S2BOModule1V2() {
     const aiOn = specMode === 'b';
 
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900 flex items-center">Documents<SpecBadge type="enhanced" /></div><div className="text-sm text-slate-500">{aiOn ? (isAurelius ? 'Upload documents — we extract structured data and pre-fill.' : 'Upload supporting documents to confirm ACRA data.') : 'Attach the required documents. Identity checked manually against the mandate.'}</div></div><div className={`text-[10px] px-2.5 py-1 rounded-full font-semibold tracking-wider ${aiOn ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-600'}`}>{aiOn ? 'DOC INTELLIGENCE' : 'MANUAL UPLOAD'}</div></div>
-        <div className={`grid ${aiOn && docIntelState.showSidePanel ? 'grid-cols-2 gap-5' : 'grid-cols-1'} mt-5`}>
+        <div className={`grid ${aiOn && docIntelState.showSidePanel ? 'lg:grid-cols-2 gap-5' : 'grid-cols-1'} mt-5`}>
           <div>
             <SpecBOutline type="enhanced">
               <div className="rounded-xl border-2 border-dashed border-blue-300 bg-gradient-to-br from-blue-50 to-white p-5 flex items-center gap-4">
@@ -1503,7 +1503,7 @@ export default function S2BOModule1V2() {
     };
 
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">Review and submit</div><div className="text-sm text-slate-500">{allComplete ? 'Everything ready. Send for bank review.' : `${completedCount} of ${sectionsForReview.length} sections complete.`}</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold tracking-wider">REVIEW</div></div>
         <div className="mt-7">
           <div className="flex items-center gap-3 mb-4"><div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold">1</div><h3 className="text-sm font-semibold text-slate-900">Section summary</h3></div>
@@ -1558,7 +1558,7 @@ export default function S2BOModule1V2() {
     const simulateSign = (docId: string, signerName: string) => { setSigningState(prev => ({ ...prev, [`${docId}-${signerName}`]: 'signed' })); showToast(`${signerName} signed`); };
 
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-6 px-8 py-7">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm m-4 px-5 py-6 md:m-6 md:px-8 md:py-7">
         <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900">{appStatus === 'bank-review' ? 'Bank review in progress' : appStatus === 'awaiting-signatures' ? 'Awaiting signatures' : 'Application activated'}</div><div className="text-sm text-slate-500">{appStatus === 'bank-review' ? 'Validating against PACE, eBBS, CADM.' : appStatus === 'awaiting-signatures' ? `${signedCount} of ${totalSignatures} signatures collected.` : 'All signatures collected. Accounts now active.'}</div></div><div className={`text-[10px] px-2.5 py-1 rounded-full font-semibold tracking-wider ${appStatus === 'bank-review' ? 'bg-blue-50 text-blue-700' : appStatus === 'awaiting-signatures' ? 'bg-purple-50 text-purple-700' : 'bg-emerald-50 text-emerald-700'}`}>{appStatus === 'bank-review' ? 'BANK REVIEW' : appStatus === 'awaiting-signatures' ? 'E-SIGNING' : 'ACTIVATED'}</div></div>
         <div className="mt-7 max-w-3xl">
           <div className="grid grid-cols-4 gap-2">
