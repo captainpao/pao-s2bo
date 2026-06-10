@@ -94,7 +94,7 @@ async function callClaude(userContent: ContentBlock[], systemPrompt: string): Pr
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-opus-4-8',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
@@ -118,29 +118,53 @@ function parseJson<T>(raw: string): T {
 
 export async function processDocumentPack(files: File[]): Promise<DocumentPackResult> {
   const contentBlocks = await Promise.all(files.map(fileToContentBlock));
-  const system = `You are a KYC specialist at a Singapore bank reviewing documents for a corporate account opening application. Analyze the attached documents carefully.
+  const system = `You are a KYC specialist at a Singapore bank. You have received one or more documents submitted as part of a CORPORATE account opening application. Your job is to extract information regardless of what each document is titled or named — the file name and document heading may be inaccurate or generic. Reason entirely from the actual content.
 
-Return ONLY raw JSON (no markdown, no code fences) with this exact schema:
+STEP 1 — Identify the company being onboarded:
+Look for any of: registered company name, "Pte Ltd" / "Ltd" / "LLP" suffix, UEN/ACRA number, business registration number, employer name on an individual form, entity named as account holder, party named in a board resolution. Use the most authoritative source found.
+
+STEP 2 — Identify the primary contact person:
+Look for any of: named applicant, authorized representative, director, signatory, account holder (if individual submitting on behalf of company), person whose email/phone/NRIC appears. Their occupation or stated role becomes their title.
+
+STEP 3 — Extract address carefully:
+Only extract as company address if it is labeled as: registered address, business address, office address, or company address. Do NOT use a personal home/residential address as the company address.
+
+STEP 4 — Fill fields only from evidence in the document. Omit any field you cannot confidently support.
+
+Field definitions:
+- legalName: Full registered company name
+- uen: Singapore UEN or company registration number (digits + letter format)
+- entityType: Legal structure (e.g. "Private Limited Company", "Sole Proprietorship", "LLP")
+- incorporated: Company incorporation/registration date as "DD MMM YYYY"
+- address: Company registered/business address only
+- industry: Business activity, sector, or SSIC description
+- contactName: Primary contact person's full name
+- contactTitle: Their job title or role
+- contactEmail: Their email address
+- contactPhone: Their mobile or direct phone number
+- primaryMarkets: Countries or regions the company operates in
+
+Return ONLY raw JSON (no markdown, no code fences):
 {
-  "classify": "1-2 sentences: each document identified with type and confidence level",
-  "extract": "1-2 sentences: which fields were extracted from which documents",
-  "reconcile": "1-2 sentences: cross-document consistency findings",
-  "validate": "1-2 sentences: document validity checks (dates, signatures, seals)",
-  "apply": "1 sentence: what was populated in the application",
+  "classify": "1-2 sentences: what each document actually is based on its content, regardless of file name",
+  "extract": "1-2 sentences: which fields came from which part of which document",
+  "reconcile": "1-2 sentences: consistency across documents, or 'Single document submitted' if only one",
+  "validate": "1-2 sentences: document validity signals (dates, signatures, seals, expiry)",
+  "apply": "1 sentence: summary of what is now populated in the application",
   "extractedFields": {
     "legalName": "...",
     "uen": "...",
-    "entityType": "Private Limited Company or similar",
-    "incorporated": "DD MMM YYYY",
-    "address": "full registered address",
+    "entityType": "...",
+    "incorporated": "...",
+    "address": "...",
     "industry": "...",
     "contactName": "...",
     "contactTitle": "...",
     "contactEmail": "...",
-    "contactPhone": "+65 ..."
+    "contactPhone": "...",
+    "primaryMarkets": "..."
   }
-}
-Include only fields you can confidently extract. Omit fields not found.`;
+}`;
 
   const raw = await callClaude(contentBlocks, system);
   type RawResult = NarrativeStep & { extractedFields?: CompanyExtract };
