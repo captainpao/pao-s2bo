@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { processDocumentPack, processIdDocument, processMandateDocument } from './lib/claude';
 import scLogoRaw from './assets/logo.svg?raw';
 import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck } from 'lucide-react';
 
@@ -142,6 +143,10 @@ export default function S2BOModule1V2() {
     meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: 'Alice Smith', contactTitle: 'Head of Finance', contactEmail: 'alice.smith@meridian.com', contactPhone: '+65 9123 4567', primaryMarkets: '' },
     aurelius: { legalName: '', uen: '202698765A', entityType: '', incorporated: '3 Apr 2026', address: '', industry: '', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' }
   });
+
+  const spvPackInputRef = useRef<HTMLInputElement>(null);
+  const docUploadInputRef = useRef<HTMLInputElement>(null);
+  const mandateFileInputRef = useRef<HTMLInputElement>(null);
 
   const fields = companyFields[entity];
   const setField = (key: keyof CompanyFields, value: string) => setCompanyFields(prev => ({ ...prev, [entity]: { ...prev[entity], [key]: value } }));
@@ -1509,6 +1514,41 @@ export default function S2BOModule1V2() {
       </div>
       <Toast />
       <Modal />
+      <input
+        ref={spvPackInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.docx,.jpg,.jpeg,.png"
+        className="hidden"
+        onChange={(e) => {
+          // @ts-ignore — runAureliusPack will accept File[] args in Task 5
+          if (e.target.files?.length) runAureliusPack(Array.from(e.target.files));
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={docUploadInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.docx,.jpg,.jpeg,.png"
+        className="hidden"
+        onChange={(e) => {
+          // @ts-ignore — startDocUploadWithFiles will be added in Task 5
+          if (e.target.files?.length) startDocUploadWithFiles(Array.from(e.target.files));
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={mandateFileInputRef}
+        type="file"
+        accept=".pdf,.docx,.jpg,.jpeg,.png"
+        className="hidden"
+        onChange={(e) => {
+          // @ts-ignore — runMandateAi will accept File arg in Task 7
+          if (e.target.files?.[0]) runMandateAi(e.target.files[0]);
+          e.target.value = '';
+        }}
+      />
     </div>
   );
 }
