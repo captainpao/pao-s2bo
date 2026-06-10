@@ -93,11 +93,7 @@ export default function S2BOModule1V2() {
 
   const [mandateStep, setMandateStep] = useState(1);
   const [signingRule, setSigningRule] = useState<SigningRule>(null);
-  const [signatories, setSignatories] = useState<Signatory[]>([
-    { id: 1, name: 'Alice Smith', role: 'Head of Finance', category: 'A', limit: 50000 },
-    { id: 2, name: 'David Tan', role: 'CFO', category: 'A', limit: 250000 },
-    { id: 3, name: 'Priya Krishnan', role: 'Treasury Manager', category: 'B', limit: 25000 }
-  ]);
+  const [signatories, setSignatories] = useState<Signatory[]>([]);
 
   const [mandateMode, setMandateMode] = useState<string>('chooser');
   const [mandateAiStage, setMandateAiStage] = useState(0);
@@ -123,24 +119,21 @@ export default function S2BOModule1V2() {
   };
 
   const [accountsList, setAccountsList] = useState<Record<EntityId, Account[]>>({
-    meridian: [
-      { id: 1, currency: 'SGD', purpose: 'Operating account', services: ['online', 'cards'] },
-      { id: 2, currency: 'USD', purpose: 'Trade settlement', services: ['online'] }
-    ],
+    meridian: [],
     aurelius: []
   });
   const accounts = accountsList[entity];
   const setAccounts = (newAccounts: Account[]) => setAccountsList(prev => ({ ...prev, [entity]: newAccounts }));
 
-  const [s2bUsers, setS2bUsers] = useState([{ id: 1, name: 'Alice Smith', email: 'alice.smith@meridian.com', role: 'Admin', dailyLimit: 1000000 }]);
+  const [s2bUsers, setS2bUsers] = useState<Array<{ id: number; name: string; email: string; role: string; dailyLimit: number }>>([]);
 
   const [completion, setCompletion] = useState<Record<EntityId, Record<SectionId, number>>>({
-    meridian: { start: 100, company: 85, compliance: 0, accounts: 60, mandate: 0, s2b: 30, documents: 40, review: 0 },
-    aurelius: { start: 100, company: 5, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 10, review: 0 }
+    meridian: { start: 100, company: 40, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 0, review: 0 },
+    aurelius: { start: 100, company: 5, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 0, review: 0 }
   });
 
   const [companyFields, setCompanyFields] = useState<Record<EntityId, CompanyFields>>({
-    meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: 'Alice Smith', contactTitle: 'Head of Finance', contactEmail: 'alice.smith@meridian.com', contactPhone: '+65 9123 4567', primaryMarkets: '' },
+    meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' },
     aurelius: { legalName: '', uen: '202698765A', entityType: '', incorporated: '3 Apr 2026', address: '', industry: '', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' }
   });
 
@@ -344,22 +337,15 @@ export default function S2BOModule1V2() {
   const resetToBaseline = () => {
     setSection('start'); setEntity('meridian'); setDelegationChoice(null); setShowWhatChanged(false);
     setMandateStep(1); setSigningRule(null); setMandateMode('chooser'); setMandateAiStage(0);
-    setSignatories([
-      { id: 1, name: 'Alice Smith', role: 'Head of Finance', category: 'A', limit: 50000 },
-      { id: 2, name: 'David Tan', role: 'CFO', category: 'A', limit: 250000 },
-      { id: 3, name: 'Priya Krishnan', role: 'Treasury Manager', category: 'B', limit: 25000 }
-    ]);
-    setAccountsList({
-      meridian: [{ id: 1, currency: 'SGD', purpose: 'Operating account', services: ['online', 'cards'] }, { id: 2, currency: 'USD', purpose: 'Trade settlement', services: ['online'] }],
-      aurelius: []
-    });
-    setS2bUsers([{ id: 1, name: 'Alice Smith', email: 'alice.smith@meridian.com', role: 'Admin', dailyLimit: 1000000 }]);
+    setSignatories([]);
+    setAccountsList({ meridian: [], aurelius: [] });
+    setS2bUsers([]);
     setCompletion({
-      meridian: { start: 100, company: 85, compliance: 0, accounts: 60, mandate: 0, s2b: 30, documents: 40, review: 0 },
-      aurelius: { start: 100, company: 5, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 10, review: 0 }
+      meridian: { start: 100, company: 40, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 0, review: 0 },
+      aurelius: { start: 100, company: 5, compliance: 0, accounts: 0, mandate: 0, s2b: 0, documents: 0, review: 0 }
     });
     setCompanyFields({
-      meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: 'Alice Smith', contactTitle: 'Head of Finance', contactEmail: 'alice.smith@meridian.com', contactPhone: '+65 9123 4567', primaryMarkets: '' },
+      meridian: { legalName: 'Meridian Trade Solutions Pte. Ltd.', uen: '202512345X', entityType: 'Private Limited Company', incorporated: '12 Jan 2020', address: '123 Anson Road, #05-01, Singapore 079906', industry: 'Commodity wholesale', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' },
       aurelius: { legalName: '', uen: '202698765A', entityType: '', incorporated: '3 Apr 2026', address: '', industry: '', contactName: '', contactTitle: '', contactEmail: '', contactPhone: '', primaryMarkets: '' }
     });
     setComplianceSubsection('country'); setComplianceSubProgress({ country: 0, 'kyc-narrative': 0, 'kyc-questions': 0, declarations: 0 });
