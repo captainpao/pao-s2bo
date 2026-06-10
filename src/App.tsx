@@ -400,8 +400,8 @@ export default function S2BOModule1V2() {
               </div>
             </div>,
             footer: <button onClick={() => setModal(null)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-full hover:bg-blue-700">Close</button>
-          })} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Eye size={12} />Preview draft</button>
-          <button onClick={() => showToast('Application saved.')} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Save size={12} />Save & exit</button>
+          })} className="px-3 py-1.5 border border-slate-300 rounded-full text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Eye size={12} />Preview draft</button>
+          <button onClick={() => showToast('Application saved.')} className="px-3 py-1.5 border border-slate-300 rounded-full text-xs font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 flex items-center gap-1.5"><Save size={12} />Save & exit</button>
         </div>
       </div>
     </div>
@@ -455,18 +455,18 @@ export default function S2BOModule1V2() {
           <button onClick={() => setModal({
             title: 'Reset demo to baseline?',
             body: <div className="text-sm text-slate-700 space-y-3"><p>Clears all entered data and returns the demo to starting state.</p></div>,
-            footer: <><button onClick={() => setModal(null)} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700">Cancel</button><button onClick={resetToBaseline} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700">Reset demo</button></>
-          })} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white/80 border border-white/15 hover:bg-white/15"><RotateCcw size={13} />Reset</button>
-          <button onClick={() => setShowWhatChanged(!showWhatChanged)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border ${showWhatChanged ? 'bg-amber-400/90 text-slate-900 border-amber-300' : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/15'}`}><Sparkles size={13} />What's new</button>
+            footer: <><button onClick={() => setModal(null)} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700">Cancel</button><button onClick={resetToBaseline} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700">Reset demo</button></>
+          })} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80 border border-white/15 hover:bg-white/15"><RotateCcw size={13} />Reset</button>
+          <button onClick={() => setShowWhatChanged(!showWhatChanged)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${showWhatChanged ? 'bg-amber-400/90 text-slate-900 border-amber-300' : 'bg-white/10 text-white/80 border-white/15 hover:bg-white/15'}`}><Sparkles size={13} />What's new</button>
           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
             <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-2">Spec</span>
-            <button onClick={() => setSpecMode('a')} className={`px-3 py-1 rounded text-xs font-medium ${specMode === 'a' ? 'bg-emerald-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>A<span className="ml-1.5 text-[9px] opacity-70">Foundation</span></button>
-            <button onClick={() => setSpecMode('b')} className={`px-3 py-1 rounded text-xs font-medium ${specMode === 'b' ? 'bg-amber-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>B<span className="ml-1.5 text-[9px] opacity-70">AI-embedded</span></button>
+            <button onClick={() => setSpecMode('a')} className={`px-3 py-1 rounded-full text-xs font-medium ${specMode === 'a' ? 'bg-emerald-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>A<span className="ml-1.5 text-[9px] opacity-70">Foundation</span></button>
+            <button onClick={() => setSpecMode('b')} className={`px-3 py-1 rounded-full text-xs font-medium ${specMode === 'b' ? 'bg-amber-400 text-slate-900' : 'text-white/80 hover:text-white'}`}>B<span className="ml-1.5 text-[9px] opacity-70">AI-embedded</span></button>
           </div>
           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/15">
             <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold pl-2">Demo entity</span>
-            <button onClick={() => setEntity('meridian')} className={`px-3 py-1 rounded text-xs font-medium ${entity === 'meridian' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Meridian<span className="ml-1.5 text-[9px] opacity-70">Registry</span></button>
-            <button onClick={() => setEntity('aurelius')} className={`px-3 py-1 rounded text-xs font-medium ${entity === 'aurelius' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Aurelius<span className="ml-1.5 text-[9px] opacity-70">Empty</span></button>
+            <button onClick={() => setEntity('meridian')} className={`px-3 py-1 rounded-full text-xs font-medium ${entity === 'meridian' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Meridian<span className="ml-1.5 text-[9px] opacity-70">Registry</span></button>
+            <button onClick={() => setEntity('aurelius')} className={`px-3 py-1 rounded-full text-xs font-medium ${entity === 'aurelius' ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'}`}>Aurelius<span className="ml-1.5 text-[9px] opacity-70">Empty</span></button>
           </div>
         </div>
       </div>
@@ -658,7 +658,7 @@ export default function S2BOModule1V2() {
         )}
 
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('start')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:border-slate-400 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => setSection('start')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 hover:border-slate-400 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={handleContinue} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
@@ -770,8 +770,8 @@ export default function S2BOModule1V2() {
         <h2 className="text-xl font-semibold text-slate-900 leading-tight mb-2.5 max-w-2xl">{currentQuestion.label}</h2>
         <p className="text-sm text-slate-600 mb-6 max-w-xl">{currentQuestion.help}</p>
         <div className="flex gap-3 max-w-md mb-6">
-          <button onClick={() => setAnswer(currentQuestion.id, 'no')} className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-semibold ${currentAnswer === 'no' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-700 hover:border-slate-400'}`}>No</button>
-          <button onClick={() => setAnswer(currentQuestion.id, 'yes')} className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-semibold ${currentAnswer === 'yes' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-300 text-slate-700 hover:border-slate-400'}`}>Yes</button>
+          <button onClick={() => setAnswer(currentQuestion.id, 'no')} className={`flex-1 py-3 px-4 rounded-full border-2 text-sm font-semibold ${currentAnswer === 'no' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-700 hover:border-slate-400'}`}>No</button>
+          <button onClick={() => setAnswer(currentQuestion.id, 'yes')} className={`flex-1 py-3 px-4 rounded-full border-2 text-sm font-semibold ${currentAnswer === 'yes' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-300 text-slate-700 hover:border-slate-400'}`}>Yes</button>
         </div>
         {currentAnswer === 'yes' && currentQuestion.branches && (
           <div className="max-w-2xl mt-4 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 animate-fadein">
@@ -781,7 +781,7 @@ export default function S2BOModule1V2() {
         )}
         {currentAnswer === 'no' && <div className="max-w-2xl mt-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-start gap-2.5 animate-fadein"><Check size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" /><div className="text-xs text-emerald-900">Noted.</div></div>}
         <div className="mt-7 flex justify-between">
-          <button onClick={() => { if (currentIdx > 0) setKycQuestionsState(prev => ({ ...prev, currentIdx: prev.currentIdx - 1 })); else setComplianceSubsection('kyc-narrative'); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => { if (currentIdx > 0) setKycQuestionsState(prev => ({ ...prev, currentIdx: prev.currentIdx - 1 })); else setComplianceSubsection('kyc-narrative'); }} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={goNext} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">{isLast ? 'Continue to declarations' : 'Next'}<ChevronRight size={14} /></button>
         </div>
       </div>
@@ -859,7 +859,7 @@ export default function S2BOModule1V2() {
         </div>
         <div className="mt-6">{renderSub()}</div>
         <div className="mt-7 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('company')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => setSection('company')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={() => { const declProgress = delegationChoice ? 100 : complianceSubProgress.declarations; const finalSub = { ...complianceSubProgress, declarations: declProgress }; const totalProgress = Math.round(Object.values(finalSub).reduce((a, b) => a + b, 0) / 4); if (declProgress > complianceSubProgress.declarations) setComplianceSubProgress(finalSub); advanceCompletion('compliance', totalProgress); setSection('accounts'); showToast(totalProgress === 100 ? 'Compliance complete' : 'Progress saved'); }} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
@@ -912,12 +912,12 @@ export default function S2BOModule1V2() {
                   <ServiceCheckbox label="Sweeping" desc="Auto-balance funds" checked={newAccount.services.includes('sweeping')} onClick={() => toggleService('sweeping')} />
                 </div>
               </div>
-              <div className="flex justify-end gap-2"><button onClick={() => { setShowAdd(false); setNewAccount({ currency: '', purpose: '', services: [] }); }} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700">Cancel</button><button onClick={addAccount} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700">Add</button></div>
+              <div className="flex justify-end gap-2"><button onClick={() => { setShowAdd(false); setNewAccount({ currency: '', purpose: '', services: [] }); }} className="px-3 py-1.5 border border-slate-300 rounded-full text-xs font-medium text-slate-700">Cancel</button><button onClick={addAccount} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full hover:bg-blue-700">Add</button></div>
             </div>
           )}
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('compliance')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => setSection('compliance')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={() => { if (accounts.length === 0) { showToast('Add at least one account.'); return; } advanceCompletion('accounts', 100); setSection('mandate'); showToast('Accounts saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
@@ -1021,10 +1021,10 @@ export default function S2BOModule1V2() {
             </div>
             <div className="mt-7 max-w-3xl bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 text-xs text-emerald-900 flex items-start gap-2.5"><Check size={14} className="text-emerald-600 flex-shrink-0 mt-0.5" /><div><strong>Plain English:</strong> Any one of 4 signatories can approve up to S$50,000. Two together can approve up to S$500,000. David Tan (CFO) plus one other for anything above that. FX over S$100,000 always needs David's signature.</div></div>
             <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-              <button onClick={() => { setMandateMode('chooser'); setMandateAiStage(0); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Start over</button>
+              <button onClick={() => { setMandateMode('chooser'); setMandateAiStage(0); }} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Start over</button>
               <div className="flex gap-2">
-                <button onClick={() => { setMandateMode('manual'); setMandateStep(2); }} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700">Edit step by step</button>
-                <button onClick={() => { advanceCompletion('mandate', 100); setSection('s2b'); showToast('Mandate confirmed'); }} className="px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 flex items-center gap-1.5"><Check size={14} />Confirm all rules</button>
+                <button onClick={() => { setMandateMode('manual'); setMandateStep(2); }} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700">Edit step by step</button>
+                <button onClick={() => { advanceCompletion('mandate', 100); setSection('s2b'); showToast('Mandate confirmed'); }} className="px-5 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-full hover:bg-emerald-700 flex items-center gap-1.5"><Check size={14} />Confirm all rules</button>
               </div>
             </div>
           </>
@@ -1072,7 +1072,7 @@ export default function S2BOModule1V2() {
                 <InputField label="Role" value={newSig.role} onChange={(v) => setNewSig({ ...newSig, role: v })} placeholder="Director" />
                 <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Category</label><select value={newSig.category} onChange={(e) => setNewSig({ ...newSig, category: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div>
               </div>
-              <div className="flex justify-end gap-2"><button onClick={() => setShowAdd(false)} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700">Cancel</button><button onClick={addSig} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-md">Add</button></div>
+              <div className="flex justify-end gap-2"><button onClick={() => setShowAdd(false)} className="px-3 py-1.5 border border-slate-300 rounded-full text-xs font-medium text-slate-700">Cancel</button><button onClick={addSig} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full">Add</button></div>
             </div>
           )}
         </div>
@@ -1187,7 +1187,7 @@ export default function S2BOModule1V2() {
         <div className="flex gap-1.5 mt-7 mb-7">{Array.from({ length: totalSteps }, (_, i) => i + 1).map(n => <div key={n} className={`flex-1 h-1 rounded-full ${n <= mandateStep ? 'bg-blue-500' : 'bg-slate-200'}`} />)}</div>
         {renderStep()}
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={goPrev} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={goPrev} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <div className="text-xs text-slate-400">Step {mandateStep} of {totalSteps}</div>
           <button onClick={goNext} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">{mandateStep === totalSteps ? 'Complete' : 'Continue'}<ChevronRight size={14} /></button>
         </div>
@@ -1234,13 +1234,13 @@ export default function S2BOModule1V2() {
                   <div><label className="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Role</label><select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"><option value="Admin">Admin</option><option value="Authoriser">Authoriser</option><option value="Inputter">Inputter</option><option value="Viewer">Viewer</option></select></div>
                   <InputField label="Daily limit (S$)" type="number" value={newUser.dailyLimit} onChange={(v) => setNewUser({ ...newUser, dailyLimit: parseInt(v) || 0 })} />
                 </div>
-                <div className="flex justify-end gap-2"><button onClick={() => setShowAdd(false)} className="px-3 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700">Cancel</button><button onClick={addUser} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-md">Add</button></div>
+                <div className="flex justify-end gap-2"><button onClick={() => setShowAdd(false)} className="px-3 py-1.5 border border-slate-300 rounded-full text-xs font-medium text-slate-700">Cancel</button><button onClick={addUser} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-full">Add</button></div>
               </div>
             )}
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('mandate')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => setSection('mandate')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={() => { advanceCompletion('s2b', 100); setSection('documents'); showToast('S2B setup saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
       </div>
@@ -1395,10 +1395,10 @@ export default function S2BOModule1V2() {
                         {!upload && !isCurrent && <div className="flex gap-1.5"><button onClick={() => {
                           if (aiOn) { setPendingId({ pid: person.id, idType: 'passport', name: person.name }); localIdFileRef.current?.click(); }
                           else { setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'passport', name: person.name, matched: true, uploaded: true } })); }
-                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />Passport</button><button onClick={() => {
+                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded-full border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />Passport</button><button onClick={() => {
                           if (aiOn) { setPendingId({ pid: person.id, idType: 'nric', name: person.name }); localIdFileRef.current?.click(); }
                           else { setIdUploads(prev => ({ ...prev, [person.id]: { idType: 'nric', name: person.name, matched: true, uploaded: true } })); }
-                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />NRIC</button></div>}
+                        }} disabled={docIntelState.isProcessing} className="px-2.5 py-1.5 text-[11px] font-semibold rounded-full border border-blue-300 text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center gap-1"><CreditCard size={11} />NRIC</button></div>}
                         {isCurrent && <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded bg-blue-100 text-blue-700">Processing</span>}
                       </div>
                       {mismatched && <div className="mt-3 pt-3 border-t border-red-200"><div className="text-[11px] text-red-800 leading-relaxed"><strong>What we found:</strong> Name on uploaded ID does not match Mandate/S2B record. Re-upload correct ID, or update name in Mandate to match.</div></div>}
@@ -1416,7 +1416,7 @@ export default function S2BOModule1V2() {
                     <div className="border border-purple-200 bg-purple-50/40 rounded-xl px-5 py-4 flex items-center gap-4">
                       <div className="w-9 h-9 rounded-lg bg-purple-500 text-white flex items-center justify-center flex-shrink-0"><FileText size={16} /></div>
                       <div className="flex-1"><div className="text-sm font-semibold text-slate-900">Audited financials (FY2024)</div><div className="text-xs text-slate-600">Uploaded 6 months ago, still valid</div></div>
-                      <button onClick={() => showToast('Reused.')} className="px-3 py-1.5 border border-purple-300 text-purple-700 text-xs font-semibold rounded-md hover:bg-purple-100">Reuse</button>
+                      <button onClick={() => showToast('Reused.')} className="px-3 py-1.5 border border-purple-300 text-purple-700 text-xs font-semibold rounded-full hover:bg-purple-100">Reuse</button>
                     </div>
                   </SpecBOutline>
                 </div>
@@ -1439,7 +1439,7 @@ export default function S2BOModule1V2() {
           )}
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('s2b')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={() => setSection('s2b')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
           <button onClick={() => { advanceCompletion('documents', 100); setSection('review'); showToast('Documents saved'); }} className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 flex items-center gap-1.5">Continue<ChevronRight size={14} /></button>
         </div>
         <input
@@ -1528,8 +1528,8 @@ export default function S2BOModule1V2() {
           </div>
         </div>
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-          <button onClick={() => setSection('documents')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
-          <button onClick={submitApp} className={`px-6 py-2.5 text-sm font-semibold rounded-lg flex items-center gap-2 ${allComplete ? 'bg-emerald-600 text-white hover:bg-emerald-700 rounded-full' : 'bg-blue-600 text-white hover:bg-blue-700 rounded-full'}`}><Send size={14} />{allComplete ? 'Submit for review' : 'Submit anyway'}</button>
+          <button onClick={() => setSection('documents')} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><ChevronLeft size={14} />Back</button>
+          <button onClick={submitApp} className={`px-6 py-2.5 text-sm font-semibold rounded-full flex items-center gap-2 ${allComplete ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-blue-600 text-white hover:bg-blue-700'}`}><Send size={14} />{allComplete ? 'Submit for review' : 'Submit anyway'}</button>
         </div>
       </div>
     );
@@ -1604,7 +1604,7 @@ export default function S2BOModule1V2() {
         )}
         <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
           <div className="text-xs text-slate-500">App ID: APP-{entity === 'meridian' ? 'MER' : 'AUR'}-2026-0001</div>
-          <button onClick={resetToBaseline} className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-1.5"><RotateCcw size={14} />Run demo again</button>
+          <button onClick={resetToBaseline} className="px-4 py-2 border border-slate-300 rounded-full text-sm font-medium text-slate-700 flex items-center gap-1.5"><RotateCcw size={14} />Run demo again</button>
         </div>
       </div>
     );
