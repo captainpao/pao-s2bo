@@ -185,37 +185,83 @@ export default function S2BOModule1V2() {
   };
   const formatMoney = (n: number) => 'S$' + n.toLocaleString();
 
-  const runAureliusPack = () => {
-    const narrative = {
-      classify: '4 documents identified: Certificate of Incorporation (ACRA format, 98% conf), Memorandum & Articles of Association, Board Resolution (dated, signed), Singapore Passport (MRZ detected).',
-      extract: 'From Cert: legal name, entity type, UEN, registered address, incorporation date. From MAA: share capital structure (1M ordinary @ S$1), 2 directors named. From Board Res: 2 director signatures, banking authority clause. From Passport: David Tan Wei Ming biographical data.',
-      reconcile: 'Director on Cert matches Passport holder exactly (David Tan Wei Ming). Address on Cert matches MAA (6 Battery Road, #18-02). Share capital on Cert matches MAA (SGD 1,000,000). Board Resolution signed by both directors listed in Cert. Second director Sarah Ng identified — ID document still required.',
-      validate: 'Cert issued by ACRA 3 Apr 2026, current. Passport valid until 14 Mar 2030. MAA properly executed with stamp duty paid. Board Resolution within 90 day window. No registry contradictions detected.',
-      apply: 'Company Details populated with 7 fields. Documents register updated: 3 of required documents received. Pending: ID document for Sarah Ng.',
-      extractedFields: {
-        legalName: 'Aurelius Maritime SPV Pte. Ltd.',
-        entityType: 'Private Limited Company',
-        address: '6 Battery Road, #18-02, Singapore 049909',
-        industry: 'Investment holding (SPV)',
-        contactName: 'David Tan Wei Ming',
-        contactTitle: 'Director',
-        contactEmail: 'david.tan@aurelius-spv.com',
-        contactPhone: '+65 6555 0100'
-      }
-    };
-    setDocIntelState(prev => ({ ...prev, isProcessing: true, processingStep: 1, showSidePanel: true, currentDocId: 'aurelius-pack', currentNarrative: narrative }));
-    setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
-    setTimeout(() => {
-      setDocIntelState(prev => ({ ...prev, processingStep: 3, extractedFields: { ...prev.extractedFields, ...narrative.extractedFields } }));
-      setCompanyFields(prev => ({ ...prev, aurelius: { ...prev.aurelius, ...narrative.extractedFields } }));
-    }, 2400);
-    setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
-    setTimeout(() => {
-      setDocIntelState(prev => ({ ...prev, processingStep: 5, isProcessing: false, uploadedDocs: [...prev.uploadedDocs, 'incorp', 'constitution', 'board'] }));
-      advanceCompletion('company', 90);
-      advanceCompletion('documents', 75);
-      showToast('SPV pack processed. Company Details populated.');
-    }, 4500);
+  const runAureliusPack = (files: File[]) => {
+    setDocIntelState(prev => ({
+      ...prev,
+      isProcessing: true,
+      processingStep: 1,
+      showSidePanel: true,
+      currentDocId: 'aurelius-pack',
+      currentNarrative: undefined,
+    }));
+    const s2 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
+    const s3 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
+    const s4 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
+
+    processDocumentPack(files)
+      .then(({ narrative, extractedFields }) => {
+        clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+        setDocIntelState(prev => ({
+          ...prev,
+          processingStep: 5,
+          isProcessing: false,
+          extractedFields,
+          uploadedDocs: [...prev.uploadedDocs, 'incorp', 'constitution', 'board'],
+          currentNarrative: narrative,
+        }));
+        setCompanyFields(prev => ({ ...prev, aurelius: { ...prev.aurelius, ...extractedFields } }));
+        advanceCompletion('company', 90);
+        advanceCompletion('documents', 75);
+        showToast('SPV pack processed. Company Details populated.');
+      })
+      .catch((err) => {
+        clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+        setDocIntelState(prev => ({ ...prev, isProcessing: false, processingStep: 0 }));
+        showToast(`Processing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      });
+  };
+
+  const startDocUploadWithFiles = (files: File[]) => {
+    setDocIntelState(prev => ({
+      ...prev,
+      isProcessing: true,
+      processingStep: 1,
+      showSidePanel: true,
+      currentDocId: 'multi-upload',
+      currentNarrative: undefined,
+    }));
+    const s2 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 2 })), 1200);
+    const s3 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 3 })), 2400);
+    const s4 = setTimeout(() => setDocIntelState(prev => ({ ...prev, processingStep: 4 })), 3600);
+
+    processDocumentPack(files)
+      .then(({ narrative, extractedFields }) => {
+        clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+        const inferredIds = files.flatMap(f => {
+          const n = f.name.toLowerCase();
+          if (n.includes('incorp') || n.includes('cert')) return ['incorp'];
+          if (n.includes('constit') || n.includes('maa') || n.includes('article')) return ['constitution'];
+          if (n.includes('board') || n.includes('resolution')) return ['board'];
+          return [];
+        });
+        setDocIntelState(prev => ({
+          ...prev,
+          processingStep: 5,
+          isProcessing: false,
+          currentNarrative: narrative,
+          uploadedDocs: [...new Set([...prev.uploadedDocs, ...inferredIds])],
+        }));
+        if (Object.keys(extractedFields).length > 0) {
+          setCompanyFields(prev => ({ ...prev, [entity]: { ...prev[entity], ...extractedFields } }));
+          advanceCompletion('company', 90);
+        }
+        showToast('Documents processed.');
+      })
+      .catch((err) => {
+        clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+        setDocIntelState(prev => ({ ...prev, isProcessing: false, processingStep: 0 }));
+        showToast(`Processing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      });
   };
 
   const runMandateAi = () => {
@@ -486,7 +532,7 @@ export default function S2BOModule1V2() {
                 <div className="text-sm font-semibold text-slate-900">Have your incorporation pack?</div>
                 <div className="text-xs text-slate-600 mt-0.5">Cert of Incorporation, MAA, Board Resolution, Director ID. We classify, extract, reconcile and populate this section.</div>
               </div>
-              <button onClick={runAureliusPack} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed">{docIntelState.isProcessing ? 'Processing...' : 'Upload SPV pack'}</button>
+              <button onClick={() => spvPackInputRef.current?.click()} disabled={docIntelState.isProcessing} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed">{docIntelState.isProcessing ? 'Processing...' : 'Upload SPV pack'}</button>
             </div>
           </SpecBOutline>
         ) : isMeridian ? (
@@ -1521,7 +1567,6 @@ export default function S2BOModule1V2() {
         accept=".pdf,.docx,.jpg,.jpeg,.png"
         className="hidden"
         onChange={(e) => {
-          // @ts-ignore — runAureliusPack will accept File[] args in Task 5
           if (e.target.files?.length) runAureliusPack(Array.from(e.target.files));
           e.target.value = '';
         }}
@@ -1533,7 +1578,6 @@ export default function S2BOModule1V2() {
         accept=".pdf,.docx,.jpg,.jpeg,.png"
         className="hidden"
         onChange={(e) => {
-          // @ts-ignore — startDocUploadWithFiles will be added in Task 5
           if (e.target.files?.length) startDocUploadWithFiles(Array.from(e.target.files));
           e.target.value = '';
         }}
