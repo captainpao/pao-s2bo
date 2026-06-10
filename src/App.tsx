@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { processDocumentPack, processIdDocument, processMandateDocument } from './lib/claude';
+import { useState, useRef, useEffect } from 'react';
+import { processDocumentPack, processIdDocument, processMandateDocument, sendChatMessage, type ChatMessage, type ChatContext } from './lib/claude';
 import scLogoRaw from './assets/logo.svg?raw';
-import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot } from 'lucide-react';
 
 /* ─── Domain types ─── */
 type EntityId = 'meridian' | 'aurelius';
@@ -80,6 +80,10 @@ export default function S2BOModule1V2() {
   const [section, setSection] = useState<SectionId>('company');
   const [toast, setToast] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalConfig | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const [delegationChoice, setDelegationChoice] = useState<string | null>(null);
   const [showWhatChanged, setShowWhatChanged] = useState(false);
   const [docIntelState, setDocIntelState] = useState<DocIntelState>({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
@@ -1609,6 +1613,134 @@ export default function S2BOModule1V2() {
       </div>
     );
   };
+
+  const ChatContent = () => {
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatMessages]);
+
+    const handleSend = async () => {
+      const text = chatInput.trim();
+      if (!text || chatLoading) return;
+      const userMsg: ChatMessage = { role: 'user', content: text };
+      const next = [...chatMessages, userMsg];
+      setChatMessages(next);
+      setChatInput('');
+      setChatLoading(true);
+      try {
+        const context: ChatContext = {
+          entity,
+          entityName: ent.name,
+          section,
+          companyName: companyFields[entity].legalName || undefined,
+        };
+        const reply = await sendChatMessage(next, context);
+        setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      } catch {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I ran into an error. Please try again.' }]);
+      } finally {
+        setChatLoading(false);
+      }
+    };
+
+    const starters = [
+      'What documents do I need to open a corporate account?',
+      'How do signing categories A and B work?',
+      'What is MAS Notice 626?',
+      'How long does account opening take?',
+    ];
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0" style={{ background: '#2C3A87' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center"><Bot size={14} className="text-white" /></div>
+            <div>
+              <div className="text-sm font-semibold text-white">KYC Assistant</div>
+              <div className="text-[10px] text-white/70">Onboarding specialist</div>
+            </div>
+          </div>
+          <button onClick={() => setChatOpen(false)} className="text-white/60 hover:text-white"><X size={18} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {chatMessages.length === 0 && (
+            <div className="space-y-4">
+              <div className="flex justify-start">
+                <div className="max-w-[90%] px-3 py-2.5 rounded-2xl rounded-tl-sm bg-slate-100 text-slate-900 text-sm leading-relaxed">
+                  Hi! I'm your KYC and onboarding specialist. Ask me anything about account opening requirements, document needs, signing mandates, or S2B setup.
+                </div>
+              </div>
+              <div className="space-y-2">
+                {starters.map(q => (
+                  <button
+                    key={q}
+                    onClick={() => { setChatInput(q); }}
+                    className="w-full text-left text-xs px-3 py-2 rounded-full border border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50/50"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[88%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-tr-sm'
+                  : 'bg-slate-100 text-slate-900 rounded-tl-sm'
+              }`}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {chatLoading && (
+            <div className="flex justify-start">
+              <div className="px-3 py-2.5 rounded-2xl rounded-tl-sm bg-slate-100 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="px-3 py-3 border-t border-slate-200 flex-shrink-0">
+          <div className="flex items-end gap-2">
+            <textarea
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              placeholder="Ask about KYC, documents, mandates…"
+              rows={1}
+              className="flex-1 resize-none px-3 py-2 text-sm border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 max-h-28 overflow-y-auto"
+              style={{ minHeight: '38px' }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!chatInput.trim() || chatLoading}
+              className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-slate-200 disabled:cursor-not-allowed flex-shrink-0"
+            >
+              <Send size={14} />
+            </button>
+          </div>
+          {chatMessages.length > 0 && (
+            <button
+              onClick={() => setChatMessages([])}
+              className="mt-1.5 text-[10px] text-slate-400 hover:text-slate-600 w-full text-center"
+            >
+              Clear conversation
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+  void ChatContent;
 
   const renderSection = () => {
     if (section === 'start') return <StartSection />;
