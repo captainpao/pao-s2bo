@@ -264,19 +264,59 @@ export default function S2BOModule1V2() {
       });
   };
 
-  const runMandateAi = () => {
+  const runMandateAi = (file?: File) => {
     setMandateMode('ai-processing');
     setMandateAiStage(1);
-    setTimeout(() => setMandateAiStage(2), 1200);
-    setTimeout(() => setMandateAiStage(3), 2400);
-    setTimeout(() => setMandateAiStage(4), 3600);
-    setTimeout(() => {
+    const s2 = setTimeout(() => setMandateAiStage(2), 1200);
+    const s3 = setTimeout(() => setMandateAiStage(3), 2400);
+    const s4 = setTimeout(() => setMandateAiStage(4), 3600);
+
+    const applyResult = (
+      extractedSignatories: typeof MANDATE_AI.signatories,
+      _rules: typeof MANDATE_AI.rules,
+    ) => {
+      clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
       setMandateAiStage(5);
-      setSignatories(MANDATE_AI.signatories);
+      setSignatories(
+        extractedSignatories.map((s, i) => ({
+          id: i + 101,
+          name: s.name,
+          role: s.role,
+          category: s.category as 'A' | 'B',
+          limit: s.limit,
+          source: (s as { source?: string }).source ?? 'Extracted from document',
+          acraDirector: (s as { acraDirector?: boolean }).acraDirector ?? false,
+        }))
+      );
       setSigningRule('categories');
       setMandateMode('ai-extracted');
       showToast('Mandate authorisations extracted.');
-    }, 4500);
+    };
+
+    if (!file) {
+      setTimeout(() => applyResult(MANDATE_AI.signatories, MANDATE_AI.rules), 4500);
+      return;
+    }
+
+    processMandateDocument(file)
+      .then(({ signatories: sigs, rules }) => {
+        const mapped = sigs.map(s => ({
+          id: 0,
+          name: s.name,
+          role: s.role,
+          category: s.category,
+          limit: s.limit,
+          source: 'Extracted from document',
+          acraDirector: false,
+        }));
+        applyResult(mapped as typeof MANDATE_AI.signatories, rules as typeof MANDATE_AI.rules);
+      })
+      .catch((err) => {
+        clearTimeout(s2); clearTimeout(s3); clearTimeout(s4);
+        setMandateMode('chooser');
+        setMandateAiStage(0);
+        showToast(`Processing error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      });
   };
 
   const Toast = () => toast ? (
@@ -910,7 +950,7 @@ export default function S2BOModule1V2() {
       <div className="flex items-start justify-between gap-3 mb-1"><div><div className="text-xl font-semibold text-slate-900 flex items-center">Mandate and signing authority<SpecBadge type="spec-b" /></div><div className="text-sm text-slate-500">Upload your Board mandate and we'll extract the authorisations, or set them up manually.</div></div><div className="text-[10px] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold tracking-wider">FOCUS MODE</div></div>
       <div className="mt-7 grid grid-cols-2 gap-4 max-w-4xl">
         <SpecBOutline type="spec-b">
-          <button onClick={runMandateAi} className="w-full h-full text-left border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 hover:border-blue-500 hover:shadow-md">
+          <button onClick={() => mandateFileInputRef.current?.click()} className="w-full h-full text-left border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 hover:border-blue-500 hover:shadow-md">
             <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-4"><Upload size={22} /></div>
             <div className="text-base font-semibold text-slate-900 mb-1.5">Upload your Board mandate</div>
             <div className="text-xs text-slate-600 leading-relaxed mb-3">We'll read the signatories, signing rules and authorisation limits prescribed by the Board, and present them for your confirmation.</div>
@@ -1637,7 +1677,6 @@ export default function S2BOModule1V2() {
         accept=".pdf,.docx,.jpg,.jpeg,.png"
         className="hidden"
         onChange={(e) => {
-          // @ts-ignore — runMandateAi will accept File arg in Task 7
           if (e.target.files?.[0]) runMandateAi(e.target.files[0]);
           e.target.value = '';
         }}
