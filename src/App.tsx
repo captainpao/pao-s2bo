@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { processDocumentPack, processIdDocument, processMandateDocument, sendChatMessage, type ChatMessage, type ChatContext } from './lib/claude';
 import scLogoRaw from './assets/logo.svg?raw';
-import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot, MessageCircle } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot } from 'lucide-react';
 
 /* ─── Domain types ─── */
 type EntityId = 'meridian' | 'aurelius';
@@ -1768,16 +1768,16 @@ export default function S2BOModule1V2() {
   return (
     <div className="min-h-screen bg-slate-100 font-sans">
       <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; } @keyframes chatbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} } .animate-chatbounce { animation: chatbounce 1.2s infinite ease-in-out; }`}</style>
-      <Banner />
-      <div className="flex">
-        <JourneyMap />
-        <div className="flex-1 min-w-0">
-          <MissionControl />
-          {renderSection()}
+      {/* Page wrapper — whole page (header included) is pushed left when chat opens on lg+ */}
+      <div className={`transition-all duration-300 ease-out ${chatOpen ? 'lg:mr-96' : 'mr-0'}`}>
+        <Banner />
+        <div className="flex">
+          <JourneyMap />
+          <div className="flex-1 min-w-0">
+            <MissionControl />
+            {renderSection()}
+          </div>
         </div>
-
-        {/* Desktop chat spacer — reserves width so content is pushed left on lg+ */}
-        <div className={`hidden lg:block flex-shrink-0 transition-all duration-300 ease-out ${chatOpen ? 'w-96' : 'w-0'}`} />
       </div>
 
       {/* Desktop chat panel — fixed full height, visible at lg+ */}
@@ -1805,7 +1805,7 @@ export default function S2BOModule1V2() {
           className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-blue-600 hover:bg-blue-700"
           aria-label="Open KYC assistant"
         >
-          <MessageCircle size={22} className="text-white" />
+          <Bot size={22} className="text-white" />
         </button>
       )}
 
