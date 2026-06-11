@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { processDocumentPack, processIdDocument, processMandateDocument, sendChatMessage, type ChatMessage, type ChatContext } from './lib/claude';
 import scLogoRaw from './assets/logo.svg?raw';
-import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot, MessageCircle } from 'lucide-react';
 
 /* ─── Domain types ─── */
 type EntityId = 'meridian' | 'aurelius';
@@ -1742,8 +1742,6 @@ export default function S2BOModule1V2() {
       </div>
     );
   };
-  void ChatContent;
-
   const renderSection = () => {
     if (section === 'start') return <StartSection />;
     if (section === 'company') return CompanySection();
@@ -1758,7 +1756,7 @@ export default function S2BOModule1V2() {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans">
-      <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; }`}</style>
+      <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; } @keyframes chatbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} } .animate-bounce { animation: chatbounce 1.2s infinite ease-in-out; }`}</style>
       <Banner />
       <div className="flex">
         <JourneyMap />
@@ -1766,7 +1764,35 @@ export default function S2BOModule1V2() {
           <MissionControl />
           {renderSection()}
         </div>
+
+        {/* Desktop chat panel — flex sibling, pushes content left on lg+ */}
+        <div className={`hidden lg:flex flex-col sticky top-0 h-screen bg-white border-l border-slate-200 flex-shrink-0 overflow-hidden transition-all duration-300 ease-out ${chatOpen ? 'w-96' : 'w-0'}`}>
+          {chatOpen && <ChatContent />}
+        </div>
       </div>
+
+      {/* Mobile chat panel — fixed overlay below lg */}
+      <div className={`lg:hidden fixed right-0 top-0 bottom-0 z-40 w-80 max-w-[85vw] bg-white border-l border-slate-200 shadow-2xl transform transition-transform duration-300 ease-out ${chatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        {chatOpen && <ChatContent />}
+      </div>
+
+      {/* Mobile backdrop */}
+      {chatOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-30 bg-slate-900/30 animate-fadein"
+          onClick={() => setChatOpen(false)}
+        />
+      )}
+
+      {/* Floating chat trigger */}
+      <button
+        onClick={() => setChatOpen(prev => !prev)}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors duration-200 ${chatOpen ? 'bg-slate-700 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-700'}`}
+        aria-label={chatOpen ? 'Close chat' : 'Open KYC assistant'}
+      >
+        {chatOpen ? <X size={22} className="text-white" /> : <MessageCircle size={22} className="text-white" />}
+      </button>
+
       <Toast />
       <Modal />
       <input
