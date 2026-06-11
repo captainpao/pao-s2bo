@@ -82,7 +82,6 @@ export default function S2BOModule1V2() {
   const [modal, setModal] = useState<ModalConfig | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [delegationChoice, setDelegationChoice] = useState<string | null>(null);
   const [showWhatChanged, setShowWhatChanged] = useState(false);
@@ -1614,20 +1613,22 @@ export default function S2BOModule1V2() {
     );
   };
 
+  // Render as <ChatContent /> (not ChatContent()) — it owns hooks; calling it inline would violate Rules of Hooks.
   const ChatContent = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [draft, setDraft] = useState('');
 
     useEffect(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [chatMessages]);
 
     const handleSend = async () => {
-      const text = chatInput.trim();
+      const text = draft.trim();
       if (!text || chatLoading) return;
       const userMsg: ChatMessage = { role: 'user', content: text };
       const next = [...chatMessages, userMsg];
       setChatMessages(next);
-      setChatInput('');
+      setDraft('');
       setChatLoading(true);
       try {
         const context: ChatContext = {
@@ -1677,7 +1678,7 @@ export default function S2BOModule1V2() {
                 {starters.map(q => (
                   <button
                     key={q}
-                    onClick={() => { setChatInput(q); }}
+                    onClick={() => { setDraft(q); }}
                     className="w-full text-left text-xs px-3 py-2 rounded-full border border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50/50"
                   >
                     {q}
@@ -1712,9 +1713,9 @@ export default function S2BOModule1V2() {
         <div className="px-3 py-3 border-t border-slate-200 flex-shrink-0">
           <div className="flex items-end gap-2">
             <textarea
-              value={chatInput}
-              onChange={e => setChatInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSend(); } }}
               placeholder="Ask about KYC, documents, mandates…"
               rows={1}
               className="flex-1 resize-none px-3 py-2 text-sm border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 max-h-28 overflow-y-auto"
@@ -1722,7 +1723,7 @@ export default function S2BOModule1V2() {
             />
             <button
               onClick={handleSend}
-              disabled={!chatInput.trim() || chatLoading}
+              disabled={!draft.trim() || chatLoading}
               className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-slate-200 disabled:cursor-not-allowed flex-shrink-0"
             >
               <Send size={14} />
@@ -1731,7 +1732,8 @@ export default function S2BOModule1V2() {
           {chatMessages.length > 0 && (
             <button
               onClick={() => setChatMessages([])}
-              className="mt-1.5 text-[10px] text-slate-400 hover:text-slate-600 w-full text-center"
+              disabled={chatLoading}
+              className="mt-1.5 text-[10px] text-slate-400 hover:text-slate-600 disabled:text-slate-300 w-full text-center"
             >
               Clear conversation
             </button>
