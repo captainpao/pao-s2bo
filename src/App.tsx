@@ -495,6 +495,7 @@ export default function S2BOModule1V2() {
     setKycQuestionsState({ currentIdx: 0, answers: {}, followups: {} });
     setDocIntelState({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
     setIdUploads({}); setAppStatus('client-draft'); setSigningState({}); setModal(null);
+    setChatOpen(false); setChatMessages([]); setChatLoading(false);
     showToast('Demo reset to baseline');
   };
 
