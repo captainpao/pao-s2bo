@@ -1802,10 +1802,10 @@ export default function S2BOModule1V2() {
       {!chatOpen && (
         <button
           onClick={() => setChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-blue-600 hover:bg-blue-700"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100"
           aria-label="Open KYC assistant"
         >
-          <Bot size={22} className="text-white" />
+          <Bot size={22} className="text-blue-600" />
         </button>
       )}
 
