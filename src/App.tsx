@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { processDocumentPack, processIdDocument, processMandateDocument } from './lib/claude';
+import { useState, useRef, useEffect } from 'react';
+import { processDocumentPack, processIdDocument, processMandateDocument, sendChatMessage, type ChatMessage, type ChatContext } from './lib/claude';
 import scLogoRaw from './assets/logo.svg?raw';
-import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, FileText, Save, Eye, Users, User, UserCheck, Mail, Building2, MapPin, Phone, Briefcase, X, Upload, AlertCircle, Sparkles, Plus, Trash2, CreditCard, Shield, Edit3, Send, RotateCcw, BadgeCheck, Bot } from 'lucide-react';
 
 /* ─── Domain types ─── */
 type EntityId = 'meridian' | 'aurelius';
@@ -75,11 +75,132 @@ interface IdUpload {
   uploaded: boolean;
 }
 
+const ChatPanel = ({ messages, loading, onSend, onClose, onClear }: {
+  messages: ChatMessage[];
+  loading: boolean;
+  onSend: (text: string) => void;
+  onClose: () => void;
+  onClear: () => void;
+}) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [draft, setDraft] = useState('');
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  const handleSend = () => {
+    const text = draft.trim();
+    if (!text || loading) return;
+    setDraft('');
+    onSend(text);
+  };
+
+  const starters = [
+    'What documents do I need to open a corporate account?',
+    'How do signing categories A and B work?',
+    'What is MAS Notice 626?',
+    'How long does account opening take?',
+  ];
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0" style={{ background: '#2C3A87' }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center"><Bot size={14} className="text-white" /></div>
+          <div>
+            <div className="text-sm font-semibold text-white">KYC Assistant</div>
+            <div className="text-[10px] text-white/70">Onboarding specialist</div>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-white/60 hover:text-white"><X size={18} /></button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages.length === 0 && (
+          <div className="space-y-4">
+            <div className="flex justify-start">
+              <div className="max-w-[90%] px-3 py-2.5 rounded-2xl rounded-tl-sm bg-slate-100 text-slate-900 text-sm leading-relaxed">
+                Hi! I'm your KYC and onboarding specialist. Ask me anything about account opening requirements, document needs, signing mandates, or S2B setup.
+              </div>
+            </div>
+            <div className="space-y-2">
+              {starters.map(q => (
+                <button
+                  key={q}
+                  onClick={() => setDraft(q)}
+                  className="w-full text-left text-xs px-3 py-2 rounded-full border border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50/50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[88%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+              msg.role === 'user'
+                ? 'bg-blue-600 text-white rounded-tr-sm'
+                : 'bg-slate-100 text-slate-900 rounded-tl-sm'
+            }`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="px-3 py-2.5 rounded-2xl rounded-tl-sm bg-slate-100 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-chatbounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-chatbounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-chatbounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="px-3 py-3 border-t border-slate-200 flex-shrink-0">
+        <div className="flex items-end gap-2">
+          <textarea
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSend(); } }}
+            placeholder="Ask about KYC, documents, mandates…"
+            rows={1}
+            className="flex-1 resize-none px-3 py-2 text-sm border border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 max-h-28 overflow-y-auto"
+            style={{ minHeight: '38px' }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!draft.trim() || loading}
+            className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-slate-200 disabled:cursor-not-allowed flex-shrink-0"
+          >
+            <Send size={14} />
+          </button>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={onClear}
+            disabled={loading}
+            className="mt-1.5 text-[10px] text-slate-400 hover:text-slate-600 disabled:text-slate-300 w-full text-center"
+          >
+            Clear conversation
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function S2BOModule1V2() {
   const [entity, setEntity] = useState<EntityId>('meridian');
   const [section, setSection] = useState<SectionId>('company');
   const [toast, setToast] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalConfig | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
   const [delegationChoice, setDelegationChoice] = useState<string | null>(null);
   const [showWhatChanged, setShowWhatChanged] = useState(false);
   const [docIntelState, setDocIntelState] = useState<DocIntelState>({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
@@ -151,6 +272,27 @@ export default function S2BOModule1V2() {
 
   const ent = entityData[entity];
   const sectionCompletion = completion[entity];
+
+  const sendChat = async (text: string) => {
+    const userMsg: ChatMessage = { role: 'user', content: text };
+    const next = [...chatMessages, userMsg];
+    setChatMessages(next);
+    setChatLoading(true);
+    try {
+      const context: ChatContext = {
+        entity,
+        entityName: ent.name,
+        section,
+        companyName: companyFields[entity].legalName || undefined,
+      };
+      const reply = await sendChatMessage(next, context);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I ran into an error. Please try again.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   const sections: { id: SectionId; label: string }[] = [
     { id: 'start', label: 'Get started' },
@@ -353,6 +495,7 @@ export default function S2BOModule1V2() {
     setKycQuestionsState({ currentIdx: 0, answers: {}, followups: {} });
     setDocIntelState({ uploadedDocs: [], isProcessing: false, processingStep: 0, extractedFields: {}, showSidePanel: false });
     setIdUploads({}); setAppStatus('client-draft'); setSigningState({}); setModal(null);
+    setChatOpen(false); setChatMessages([]); setChatLoading(false);
     showToast('Demo reset to baseline');
   };
 
@@ -1624,15 +1767,48 @@ export default function S2BOModule1V2() {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans">
-      <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; }`}</style>
-      <Banner />
-      <div className="flex">
-        <JourneyMap />
-        <div className="flex-1 min-w-0">
-          <MissionControl />
-          {renderSection()}
+      <style>{`@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } } .animate-fadein { animation: fadein 0.2s ease-out; } @keyframes chatbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} } .animate-chatbounce { animation: chatbounce 1.2s infinite ease-in-out; }`}</style>
+      {/* Page wrapper — whole page (header included) is pushed left when chat opens on lg+ */}
+      <div className={`transition-all duration-300 ease-out ${chatOpen ? 'lg:mr-96' : 'mr-0'}`}>
+        <Banner />
+        <div className="flex">
+          <JourneyMap />
+          <div className="flex-1 min-w-0">
+            <MissionControl />
+            {renderSection()}
+          </div>
         </div>
       </div>
+
+      {/* Desktop chat panel — fixed full height, visible at lg+ */}
+      <div className={`hidden lg:flex flex-col fixed right-0 top-0 bottom-0 z-40 w-96 bg-white border-l border-slate-200 transform transition-transform duration-300 ease-out ${chatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        {chatOpen && <ChatPanel messages={chatMessages} loading={chatLoading} onSend={sendChat} onClose={() => setChatOpen(false)} onClear={() => setChatMessages([])} />}
+      </div>
+
+      {/* Mobile chat panel — fixed overlay below lg */}
+      <div className={`lg:hidden fixed right-0 top-0 bottom-0 z-40 w-80 max-w-[85vw] bg-white border-l border-slate-200 shadow-2xl transform transition-transform duration-300 ease-out ${chatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        {chatOpen && <ChatPanel messages={chatMessages} loading={chatLoading} onSend={sendChat} onClose={() => setChatOpen(false)} onClear={() => setChatMessages([])} />}
+      </div>
+
+      {/* Mobile backdrop */}
+      {chatOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-30 bg-slate-900/30 animate-fadein"
+          onClick={() => setChatOpen(false)}
+        />
+      )}
+
+      {/* Floating chat trigger */}
+      {!chatOpen && (
+        <button
+          onClick={() => setChatOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100"
+          aria-label="Open KYC assistant"
+        >
+          <Bot size={22} className="text-blue-600" />
+        </button>
+      )}
+
       <Toast />
       <Modal />
       <input

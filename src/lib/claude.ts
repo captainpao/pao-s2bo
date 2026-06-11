@@ -254,3 +254,58 @@ Category A = senior/higher-limit signatories, B = operational/lower-limit. Limit
     rules: parsed.rules ?? [],
   };
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatContext {
+  entity: string;        // 'meridian' | 'aurelius'
+  entityName: string;    // e.g. 'Meridian Trade Solutions Pte. Ltd.'
+  section: string;       // e.g. 'company' | 'compliance' etc.
+  companyName?: string;  // populated once user has entered it
+}
+
+export async function sendChatMessage(
+  messages: ChatMessage[],
+  context: ChatContext
+): Promise<string> {
+  const system = `You are a KYC and corporate banking onboarding specialist at Standard Chartered Bank, embedded in the Straight2Bank (S2B) corporate onboarding portal. You help relationship managers and corporate clients navigate:
+
+- KYC/AML-CFT requirements: what documents are needed, why, and how they're verified
+- Corporate account opening process, timelines, and sequencing
+- Entity types and their specific requirements (Singapore Pte Ltd, LLP, sole proprietor, SPV, foreign branch)
+- Signing mandate and authorised signatory setup: categories, limits, signing rules
+- S2B digital banking platform: user access, roles (Admin/Authoriser/Inputter/Viewer), transaction limits
+- Singapore regulatory requirements: MAS Notice 626, FATCA, CRS, PDPA implications
+- ACRA registry data: how it pre-fills the application and what happens when it's outdated
+- Document validity: certification requirements, expiry windows, resubmission process
+- Compliance flags: PIC entities, defence-related businesses, enhanced due diligence triggers
+
+Current session context:
+- Entity scenario: ${context.entityName} (${context.entity === 'meridian' ? 'established company with ACRA registry pre-fill' : 'newly incorporated SPV, no registry data, document upload required'})
+- Current section: ${context.section}
+${context.companyName ? `- Applicant company: ${context.companyName}` : ''}
+
+Be concise, direct, and professional — one or two short paragraphs maximum unless the question genuinely requires more. When a question is outside your knowledge or concerns this bank's internal policies specifically, say so clearly and direct the user to their relationship manager. Never invent policy details.`;
+
+  const response = await fetch('/api/claude/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      system,
+      messages: messages.map(m => ({ role: m.role, content: m.content })),
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Chat API error ${response.status}: ${err}`);
+  }
+  const data = await response.json() as { content?: Array<{ type: string; text?: string }> };
+  const textBlock = data.content?.find(b => b.type === 'text');
+  if (!textBlock?.text) throw new Error('No text in chat response');
+  return textBlock.text;
+}
